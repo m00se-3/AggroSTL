@@ -2,7 +2,8 @@
 
 import Arrays;
 
-void printArray(const aggro::dyArray<int>& list)
+template<typename T>
+void printArray(const aggro::dyArray<T>& list)
 {
 	for (auto& i : list)
 	{
@@ -12,7 +13,8 @@ void printArray(const aggro::dyArray<int>& list)
 	std::cout << std::endl;
 }
 
-void printArray(const aggro::stArray<float, 5>& list)
+template<typename T, size_t N>
+void printArray(const aggro::stArray<T, N>& list)
 {
 	for (auto& i : list)
 	{

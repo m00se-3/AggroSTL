@@ -27,13 +27,13 @@ namespace aggro
 
 	public:
 		stArray() = default;
-		stArray(const stArray<T, N>& other)
+		stArray(const stArray& other)
 		{
 			for (int n = 0; n < N; n++)
 				m_data[n] = other[n];
 		}
 
-		stArray(stArray<T, N>&& other) noexcept
+		stArray(stArray&& other) noexcept
 		{
 			for (int n = 0; n < N; n++)
 				m_data[n] = other[n];
@@ -46,7 +46,7 @@ namespace aggro
 		}
 		~stArray() {}
 
-		stArray<T, N>& operator=(const stArray<T, N>& other)
+		stArray& operator=(const stArray& other)
 		{
 			for (int n = 0; n < N; n++)
 				m_data[n] = other[n];
@@ -54,7 +54,7 @@ namespace aggro
 			return *this;
 		}
 
-		stArray<T, N>& operator=(stArray<T, N>&& other) noexcept
+		stArray& operator=(stArray&& other) noexcept
 		{
 			for (int n = 0; n < N; n++)
 				m_data[n] = other[n];
@@ -62,7 +62,7 @@ namespace aggro
 			return *this;
 		}
 
-		stArray<T, N>& operator=(const std::initializer_list<T>& inits)
+		stArray& operator=(const std::initializer_list<T>& inits)
 		{
 			for (int n = 0; n < N; n++)
 				m_data[n] = *(inits.begin() + n);
@@ -73,8 +73,8 @@ namespace aggro
 		T& operator[](size_t index) { return m_data[index]; }
 		const T& operator[](size_t index) const { return m_data[index]; }
 
-		constexpr size_t size() { return N; }
-		constexpr size_t bytes() { return N * sizeof(T); }
+		constexpr size_t size() const { return N; }
+		constexpr size_t bytes() const { return N * sizeof(T); }
 
 		T* data() { return m_data; }
 		std::optional<T> at(size_t index)
@@ -85,7 +85,7 @@ namespace aggro
 				return {};
 		}
 
-		bool empty() { return begin() == end(); }
+		bool empty() const { return begin() == end(); }
 
 		iterator begin() { return m_data; }
 		iterator end() { return m_data + N; }
@@ -184,7 +184,7 @@ namespace aggro
 			}
 		}
 
-		dyArray(const dyArray<T, A>& other)
+		dyArray(const dyArray& other)
 			: m_count(other.size()), m_capacity(other.capacity())
 		{
 			m_data = allocate(m_capacity);
@@ -198,7 +198,7 @@ namespace aggro
 			}
 		}
 
-		dyArray(dyArray<T, A>&& other)
+		dyArray(dyArray&& other)
 			: m_count(other.size()), m_capacity(other.capacity())
 		{
 			m_data = other.data();
@@ -215,7 +215,7 @@ namespace aggro
 			return m_data[index];
 		}
 
-		dyArray<T>& operator=(const dyArray<T>& other)
+		dyArray& operator=(const dyArray& other)
 		{
 			if (this != &other)
 			{
@@ -240,7 +240,7 @@ namespace aggro
 			return *this;
 		}
 
-		dyArray<T>& operator=(dyArray<T>&& other) noexcept
+		dyArray& operator=(dyArray&& other) noexcept
 		{
 			if (this != &other)
 			{
@@ -258,7 +258,7 @@ namespace aggro
 			return *this;
 		}
 
-		dyArray<T>& operator=(std::initializer_list<T>&& list)
+		dyArray& operator=(std::initializer_list<T>&& list)
 		{
 			clear();
 			::operator delete(m_data, m_capacity * sizeof(T));
