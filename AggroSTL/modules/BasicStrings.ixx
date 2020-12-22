@@ -4,15 +4,15 @@ module;
 #include <memory>
 #include <optional>
 
-export module String;
+import StringViews;
+
+export module BasicStrings;
 
 /*
 	TODO: implement helpful functions to the string classes, examples:
 		size_t find() : return the first occurance of a substring in a string.
 		size_t next() : coroutine returning occurances of substrings.
 		operator+() : concatinate strings together.
-
-	TODO: create a std::string_view like class.
 */
 
 namespace aggro
@@ -27,9 +27,12 @@ namespace aggro
 			std::is_same<T, char32_t>::value;
 	};
 
+	template<Character T> class sharedStringType;
+
 	/*
-		A basic string type similar to std::string. This class is designed to support
-		all character encoding from ASCII to Unicode-32.
+		A basic string class similar to std::string.
+		This class does not support custom allocators/deletors, but supports all
+		all string encoding from ASCII to Unicode-32.
 	*/
 	export template<Character T> 
 		class stringType
@@ -45,6 +48,8 @@ namespace aggro
 		using constIterator = const T*;
 		using revIterator = T*;
 		using constRevIterator = const T*;
+
+		friend std::ostream& operator<<(std::ostream& os, const stringType& str);
 
 		stringType() = default;
 		stringType(T* input)
@@ -169,20 +174,20 @@ namespace aggro
 		// Checks if the passed substring exists in the string object.
 		bool contains(T* sub) const
 		{
-			size_t sublength = strlen(sub);
+			size_t subLength = strlen(sub);
 			size_t count = 0;
 
-			for (auto c : m_data)
+			for (size_t i = 0; i < subLength; i++)
 			{
-				if (c == sub[count])
+				if (m_data[i] == sub[count])
 					count++;
 				else
 					count = 0;
 
-				if (count == sublength) break;
+				if (count == subLength) break;
 			}
 
-			return count == sublength;
+			return count == subLength;
 		}
 
 		// Checks if the passed substring exists in the string object.
@@ -190,9 +195,9 @@ namespace aggro
 		{
 			size_t count = 0;
 
-			for (auto c : m_data)
+			for (size_t i = 0; i < m_size; i++)
 			{
-				if (c == sub[count])
+				if (m_data[i] == sub[count])
 					count++;
 				else
 					count = 0;
@@ -208,9 +213,9 @@ namespace aggro
 		{
 			size_t count = 0;
 
-			for (auto c : m_data)
+			for (size_t i = 0; i < m_size; i++)
 			{
-				if (c == sub[count])
+				if (m_data[i] == sub[count])
 					count++;
 				else
 					count = 0;
@@ -268,6 +273,8 @@ namespace aggro
 		using constIterator = const T*;
 		using revIterator = T*;
 		using constRevIterator = const T*;
+
+		friend std::ostream& operator<<(std::ostream& os, const sharedStringType& str);
 
 		sharedStringType() = default;
 		sharedStringType(T* input)
@@ -331,6 +338,10 @@ namespace aggro
 			return *this;
 		}
 
+		T& operator[](size_t index) { return m_data.get()[index]; }
+
+		const T& operator[](size_t index) const { return m_data.get()[index]; }
+
 		// Returns the length of the current string.
 		size_t length() const { return m_size; }
 
@@ -346,30 +357,30 @@ namespace aggro
 		// Checks if the passed substring exists in the string object.
 		bool contains(T* sub) const
 		{
-			size_t sublength = strlen(sub);
+			size_t subLength = strlen(sub);
 			size_t count = 0;
 
-			for (auto c : m_data)
+			for (size_t i = 0; i < m_size; i++)
 			{
-				if (c == sub[count])
+				if (m_data.get()[i] == sub[count])
 					count++;
 				else
 					count = 0;
 
-				if (count == sublength) break;
+				if (count == subLength) break;
 			}
 
-			return count == sublength;
+			return count == subLength;
 		}
 
 		// Checks if the passed substring exists in the string object.
-		bool contains(const stringType& sub) const
+		bool contains(const stringType<T>& sub) const
 		{
 			size_t count = 0;
 
-			for (auto c : m_data)
+			for (size_t i = 0; i < m_size; i++)
 			{
-				if (c == sub[count])
+				if (m_data.get()[i] == sub[count])
 					count++;
 				else
 					count = 0;
@@ -385,9 +396,9 @@ namespace aggro
 		{
 			size_t count = 0;
 
-			for (auto c : m_data)
+			for (size_t i = 0; i < m_size; i++)
 			{
-				if (c == sub[count])
+				if (m_data.get()[i] == sub[count])
 					count++;
 				else
 					count = 0;
@@ -404,17 +415,17 @@ namespace aggro
 		// Returns the internal std::shared_ptr to the string.
 		const std::shared_ptr<T> data() const { return m_data; }
 
-		iterator begin() { return m_data; }
-		iterator end() { return m_data + m_size; }
+		iterator begin() { return m_data.get(); }
+		iterator end() { return m_data.get() + m_size; }
 
-		constIterator begin() const { return m_data; }
-		constIterator end() const { return m_data + m_size; }
+		constIterator begin() const { return m_data.get(); }
+		constIterator end() const { return m_data.get() + m_size; }
 
-		revIterator rbegin() { return m_data + m_size; }
-		revIterator rend() { return m_data; }
+		revIterator rbegin() { return m_data.get() + m_size; }
+		revIterator rend() { return m_data.get(); }
 
-		constRevIterator rbegin() const { return m_data + m_size; }
-		constRevIterator rend() const { return m_data; }
+		constRevIterator rbegin() const { return m_data.get() + m_size; }
+		constRevIterator rend() const { return m_data.get(); }
 
 		// Returns a copy of the current string seperate from the owned object.
 		stringType<T> copy() const
@@ -442,4 +453,18 @@ namespace aggro
 	export using sharedStringU8 = sharedStringType<char8_t>;
 	export using sharedStringU16 = sharedStringType<char16_t>;
 	export using sharedStringU32 = sharedStringType<char32_t>;
+}
+
+template<aggro::Character T>
+std::ostream& operator<<(std::ostream& os, const aggro::stringType<T>& str)
+{
+	os << str.m_data;
+	return os;
+}
+
+template<aggro::Character T>
+std::ostream& operator<<(std::ostream& os, const aggro::sharedStringType<T>& str)
+{
+	os << str.m_data;
+	return os;
 }
