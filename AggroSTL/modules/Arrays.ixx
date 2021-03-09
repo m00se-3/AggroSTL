@@ -6,7 +6,7 @@ module;
 
 export module Arrays;
 
-namespace aggro
+export namespace aggro
 {
 	export enum class arrayType
 	{
@@ -198,7 +198,7 @@ namespace aggro
 			}
 		}
 
-		dyArray(dyArray&& other)
+		dyArray(dyArray&& other) noexcept
 			: m_count(other.size()), m_capacity(other.capacity())
 		{
 			m_data = other.data();
@@ -385,7 +385,7 @@ namespace aggro
 
 		//Erase all elements from the starting point to the stopping point.
 		//If start is nullptr, this will start at the begining of the array.
-		//If stop is nullptr, this will stop at the last pushed element.
+		//If stop is nullptr, this will stop at the end of the array.
 		void erase(T* start, T* stop = nullptr)
 		{
 			if (start == end()) return;
