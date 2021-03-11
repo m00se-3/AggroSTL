@@ -6,98 +6,98 @@ module;
 
 export module Arrays;
 
-export namespace aggro
+namespace aggro
 {
-	export enum class arrayType
+	export enum class ArrayType
 	{
 		TINY, SMALL, LARGE
 	};
 
 	//Stack allocated array which supports iterators. Replaces std::array.
 	export template<typename T, unsigned int N>
-	class stArray
+	class StArray
 	{
-		using typeValue = T;
-		using iterator = T*;
-		using constIterator = const T*;
-		using revIterator = T*;
-		using constRevIterator = const T*;
+		using TypeValue = T;
+		using Iterator = T*;
+		using ConstIterator = const T*;
+		using RevIterator = T*;
+		using ConstRevIterator = const T*;
 
-		T m_data[N];
+		T data[N];
 
 	public:
-		stArray() = default;
-		stArray(const stArray& other)
+		StArray() = default;
+		StArray(const StArray& other)
 		{
 			for (int n = 0; n < N; n++)
-				m_data[n] = other[n];
+				data[n] = other[n];
 		}
 
-		stArray(stArray&& other) noexcept
+		StArray(StArray&& other) noexcept
 		{
 			for (int n = 0; n < N; n++)
-				m_data[n] = other[n];
+				data[n] = other[n];
 		}
 
-		stArray(const std::initializer_list<T>& inits)
+		StArray(const std::initializer_list<T>& inits)
 		{
 			for (int n = 0; n < N; n++)
-				m_data[n] = *(inits.begin() + n);
+				data[n] = *(inits.begin() + n);
 		}
-		~stArray() {}
+		~StArray() {}
 
-		stArray& operator=(const stArray& other)
+		StArray& operator=(const StArray& other)
 		{
 			for (int n = 0; n < N; n++)
-				m_data[n] = other[n];
+				data[n] = other[n];
 
 			return *this;
 		}
 
-		stArray& operator=(stArray&& other) noexcept
+		StArray& operator=(StArray&& other) noexcept
 		{
 			for (int n = 0; n < N; n++)
-				m_data[n] = other[n];
+				data[n] = other[n];
 
 			return *this;
 		}
 
-		stArray& operator=(const std::initializer_list<T>& inits)
+		StArray& operator=(const std::initializer_list<T>& inits)
 		{
 			for (int n = 0; n < N; n++)
-				m_data[n] = *(inits.begin() + n);
+				data[n] = *(inits.begin() + n);
 
 			return *this;
 		}
 
-		T& operator[](size_t index) { return m_data[index]; }
-		const T& operator[](size_t index) const { return m_data[index]; }
+		T& operator[](size_t index) { return data[index]; }
+		const T& operator[](size_t index) const { return data[index]; }
 
-		constexpr size_t size() const { return N; }
-		constexpr size_t bytes() const { return N * sizeof(T); }
+		constexpr size_t Size() const { return N; }
+		constexpr size_t Bytes() const { return N * sizeof(T); }
 
-		T* data() { return m_data; }
-		std::optional<T> at(size_t index)
+		T* Data() { return data; }
+		std::optional<T> At(size_t index)
 		{
 			if (index < N)
-				return m_data[index];
+				return data[index];
 			else
 				return {};
 		}
 
-		bool empty() const { return begin() == end(); }
+		bool Empty() const { return begin() == end(); }
 
-		iterator begin() { return m_data; }
-		iterator end() { return m_data + N; }
+		Iterator begin() { return data; }
+		Iterator end() { return data + N; }
 
-		constIterator begin() const { return m_data; }
-		constIterator end() const { return m_data + N; }
+		ConstIterator begin() const { return data; }
+		ConstIterator end() const { return data + N; }
 
-		revIterator rbegin() { return m_data + N; }
-		revIterator rend() { return m_data; }
+		RevIterator rbegin() { return data + N; }
+		RevIterator rend() { return data; }
 
-		constRevIterator rbegin() const { return m_data + N; }
-		constRevIterator rend() const { return m_data; }
+		ConstRevIterator rbegin() const { return data + N; }
+		ConstRevIterator rend() const { return data; }
 	};
 
 	/*
@@ -106,23 +106,23 @@ export namespace aggro
 		Larger array types allocate more memory per resize but resize less often as a result.
 		This class allocates 3 Ts worth of memory on creation by default.
 	*/
-	export template<typename T, arrayType A = arrayType::SMALL>
-	class dyArray
+	export template<typename T, ArrayType A = ArrayType::SMALL>
+	class DyArray
 	{
-		using iterator = T*;
-		using constIterator = const T*;
-		using revIterator = T*;
-		using constRevIterator = const T*;
+		using Iterator = T*;
+		using ConstIterator = const T*;
+		using RevIterator = T*;
+		using ConstRevIterator = const T*;
 
-		T* m_data = nullptr;
-		size_t m_count = 0;
-		size_t m_capacity = 3;
+		T* data = nullptr;
+		size_t count = 0;
+		size_t capacity = 3;
 
-		void grow()
+		void Grow()
 		{
-			T* temp = m_data;
+			T* temp = data;
 			size_t nCap;
-			size_t oCap = m_capacity;
+			size_t oCap = capacity;
 
 			auto decide = [](size_t test) {
 				if (test > 0)
@@ -133,106 +133,109 @@ export namespace aggro
 
 			switch (A)
 			{
-			case arrayType::TINY:
-				nCap = decide(m_capacity + 1);
+			case ArrayType::TINY:
+				nCap = decide(capacity + 1);
 				break;
-			case arrayType::SMALL:
-				nCap = decide(m_capacity + (m_capacity / 2));
+			case ArrayType::SMALL:
+				nCap = decide(capacity + (capacity / 2));
 				break;
-			case arrayType::LARGE:
-				nCap = decide(m_capacity * 2);
+			case ArrayType::LARGE:
+				nCap = decide(capacity * 2);
 				break;
 			}
 
-			m_data = allocate(nCap);
-			m_capacity = nCap;
+			data = Allocate(nCap);
+			capacity = nCap;
 
-			for (int i = 0; i < m_count; i++)
+			for (int i = 0; i < count; i++)
 			{
-				new(&m_data[i]) T(std::move(temp[i]));
+				new(&data[i]) T(std::move(temp[i]));
 				temp[i].~T();
 			}
 
 			::operator delete(temp, oCap * sizeof(T));
 		}
 
-		T* allocate(size_t cap)
+		T* Allocate(size_t cap)
 		{
 			return (T*)::operator new(cap * sizeof(T));
 		}
 
 	public:
-		dyArray()
+
+		friend void NullifyArray(const DyArray& arr);
+
+		DyArray()
 		{
-			m_data = allocate(m_capacity);
+			data = Allocate(capacity);
 		}
 
-		dyArray(size_t cap)
-			: m_capacity(cap)
+		DyArray(size_t cap)
+			: capacity(cap)
 		{
-			m_data = allocate(cap);
+			data = Allocate(cap);
 		}
 
-		dyArray(std::initializer_list<T>&& inits)
-			: m_capacity(inits.size())
+		DyArray(std::initializer_list<T>&& inits)
+			: capacity(inits.size())
 		{
-			m_data = allocate(m_capacity);
-			for (int i = 0; i < m_capacity; i++)
+			data = Allocate(capacity);
+			for (int i = 0; i < capacity; i++)
 			{
-				m_data[i] = *(inits.begin() + i);
-				m_count++;
+				data[i] = *(inits.begin() + i);
+				count++;
 			}
 		}
 
-		dyArray(const dyArray& other)
-			: m_count(other.size()), m_capacity(other.capacity())
+		DyArray(const DyArray& other)
+			: count(other.Size()), capacity(other.Capacity())
 		{
-			m_data = allocate(m_capacity);
+			data = Allocate(capacity);
 
-			if (m_data != nullptr)
+			if (data != nullptr)
 			{
-				for (int i = 0; i < m_count; i++)
+				for (int i = 0; i < count; i++)
 				{
-					new(&m_data[i]) T(other.data()[i]);
+					new(&data[i]) T(other.Data()[i]);
 				}
 			}
 		}
 
-		dyArray(dyArray&& other) noexcept
-			: m_count(other.size()), m_capacity(other.capacity())
+		DyArray(DyArray&& other) noexcept
+			: count(other.Size()), capacity(other.Capacity())
 		{
-			m_data = other.data();
-			other.nullify();
+			data = other.Data();
+			NullifyArray(other);
 		}
 
 		T& operator[](size_t index)
 		{
-			return m_data[index];
+			return data[index];
 		}
 
 		const T& operator[](size_t index) const
 		{
-			return m_data[index];
+			return data[index];
 		}
 
-		dyArray& operator=(const dyArray& other)
+		DyArray& operator=(const DyArray& other)
 		{
 			if (this != &other)
 			{
-				clear();
-				::operator delete(m_data, m_capacity * sizeof(T));
+				Clear();
+				::operator delete(data, capacity * sizeof(T));
 
 
-				m_count = other.size();
-				m_capacity = other.capacity();
+				count = other.Size();
+				capacity = other.Capacity();
 
-				m_data = allocate(m_capacity);
+				data = Allocate(capacity);
 
-				if (m_data != nullptr)
+				if (data != nullptr)
 				{
-					for (int i = 0; i < m_count; i++)
+					for (int i = 0; i < count; i++)
 					{
-						new(&m_data[i]) T(other.data()[i]);
+						new(&data[i]) T(other.Data()[i]);
 					}
 				}
 			}
@@ -240,153 +243,153 @@ export namespace aggro
 			return *this;
 		}
 
-		dyArray& operator=(dyArray&& other) noexcept
+		DyArray& operator=(DyArray&& other) noexcept
 		{
 			if (this != &other)
 			{
-				clear();
-				::operator delete(m_data, m_capacity * sizeof(T));
+				Clear();
+				::operator delete(data, capacity * sizeof(T));
 
-				m_count = other.size();
-				m_capacity = other.sapacity();
+				count = other.Size();
+				capacity = other.Capacity();
 
-				m_data = other.data();
+				data = other.Data();
 
-				other.nullify();
+				NullifyArray(other);
 			}
 
 			return *this;
 		}
 
-		dyArray& operator=(std::initializer_list<T>&& list)
+		DyArray& operator=(std::initializer_list<T>&& list)
 		{
-			clear();
-			::operator delete(m_data, m_capacity * sizeof(T));
+			Clear();
+			::operator delete(data, capacity * sizeof(T));
 
-			m_capacity = list.size();
-			m_data = allocate(m_capacity);
+			capacity = list.Size();
+			data = Allocate(capacity);
 
-			for (int i = 0; i < m_capacity; i++)
+			for (int i = 0; i < capacity; i++)
 			{
-				m_data[i] = *(list.begin() + i);
-				m_count++;
+				data[i] = *(list.begin() + i);
+				count++;
 			}
 
 			return *this;
 		}
 
-		~dyArray()
+		~DyArray()
 		{
-			clear();
-			::operator delete(m_data, m_capacity * sizeof(T));
-			m_capacity = 0;
+			Clear();
+			::operator delete(data, capacity * sizeof(T));
+			capacity = 0;
 		}
 
 		//Return the first element in the array.
-		T& first() const { return m_data[0]; }
+		T& First() const { return data[0]; }
 
 		//Return the last element in the array.
-		T& last() const { return m_data[m_count - 1]; }
+		T& Last() const { return data[count - 1]; }
 
 		//Number of elements contained.
-		size_t size() const
+		size_t Size() const
 		{
-			return m_count;
+			return count;
 		}
 
 		//Number of elements able to be held.
-		size_t capacity() const
+		size_t Capacity() const
 		{
-			return m_capacity;
+			return capacity;
 		}
 
 		//Total size in bytes
-		size_t bytes() const
+		size_t Bytes() const
 		{
-			return m_count * sizeof(T);
+			return count * sizeof(T);
 		}
 
 		//Return raw pointer to the array data.
-		const T* data() const { return m_data; }
-		T* data() { return m_data; }
+		const T* Data() const { return data; }
+		T* Data() { return data; }
 
-		constIterator begin() const { return m_data; }
-		iterator begin() { return m_data; }
+		ConstIterator begin() const { return data; }
+		Iterator begin() { return data; }
 
-		constIterator end() const { return m_data + m_count; }
-		iterator end() { return m_data + m_count; }
+		ConstIterator end() const { return data + count; }
+		Iterator end() { return data + count; }
 
-		revIterator rbegin() { return m_data + m_count; }
-		revIterator rend() { return m_data; }
+		RevIterator rbegin() { return data + count; }
+		RevIterator rend() { return data; }
 
-		constRevIterator rbegin() const { return m_data + m_count; }
-		constRevIterator rend() const { return m_data; }
+		ConstRevIterator rbegin() const { return data + count; }
+		ConstRevIterator rend() const { return data; }
 
 		//Is the array empty?
-		bool empty() const { return begin() == end(); }
+		bool Empty() const { return begin() == end(); }
 
 		//Allocate enough memory for the provided number of elements.
-		void reserve(size_t cap)
+		void Reserve(size_t cap)
 		{
-			T* temp = m_data;
+			T* temp = data;
 
-			m_data = allocate(cap);
+			data = Allocate(cap);
 
-			for (int i = 0; i < m_count; i++)
+			for (int i = 0; i < count; i++)
 			{
-				new(&m_data[i]) T(std::move(temp[i]));
+				new(&data[i]) T(std::move(temp[i]));
 				temp[i].~T();
 			}
 
-			::operator delete(temp, m_capacity * sizeof(T));
+			::operator delete(temp, capacity * sizeof(T));
 
-			m_capacity = cap;
+			capacity = cap;
 		}
 
 		//Store a copy of the provided object in the array.
 		//Similar to push_back.
-		void pushBack(const T& element)
+		void PushBack(const T& element)
 		{
-			emplaceBack(element);
+			EmplaceBack(element);
 		}
 
 		//Move the provided object into the array. Similar to push_back.
-		void pushBack(T&& element)
+		void PushBack(T&& element)
 		{
-			emplaceBack(std::move(element));
+			EmplaceBack(std::move(element));
 		}
 
 		//Construct an object of type T directly into the array using the
 		//provided arguments. Similar to emplace_back.
 		template<typename... Args>
-		void emplaceBack(Args&&... args)
+		void EmplaceBack(Args&&... args)
 		{
-			if (m_count >= m_capacity)
-				grow();
+			if (count >= capacity)
+				Grow();
 
-			new(&m_data[m_count]) T(std::forward<Args>(args)...);
+			new(&data[count]) T(std::forward<Args>(args)...);
 
-			m_count++;
+			++count;
 		}
 
 		//Erase the last element. Similar to pop_back.
-		void popBack()
+		void PopBack()
 		{
-			if (m_count > 0)
+			if (count > 0)
 			{
-				m_count--;
-				m_data[m_count].~T();
+				--count;
+				data[count].~T();
 			}
 			else
 			{
-				m_data[m_count].~T();
+				data[count].~T();
 			}
 		}
 
 		//Erase all elements from the starting point to the stopping point.
 		//If start is nullptr, this will start at the begining of the array.
 		//If stop is nullptr, this will stop at the end of the array.
-		void erase(T* start, T* stop = nullptr)
+		void Erase(T* start, T* stop = nullptr)
 		{
 			if (start == end()) return;
 			if (start == nullptr) start = begin();
@@ -395,26 +398,27 @@ export namespace aggro
 			while (start < stop)
 			{
 				start->~T();
-				m_count--;
+				count--;
 				start++;
 			}
 		}
 
 		//Clears the whole array and resets the push counter.
-		void clear()
+		void Clear()
 		{
-			for (int i = 0; i < m_count; i++)
-				m_data[i].~T();
+			for (int i = 0; i < count; i++)
+				data[i].~T();
 
-			m_count = 0;
-		}
-
-		//Used for move operations. Using it in your code is not recommended.
-		void nullify()
-		{
-			m_count = 0;
-			m_capacity = 0;
-			m_data = nullptr;
+			count = 0;
 		}
 	};
+
+	//Used for move operations.
+	template<typename T, ArrayType A>
+	void NullifyArray(const DyArray<T,A>& arr)
+	{
+		arr.count = 0;
+		arr.capacity = 0;
+		arr.data = nullptr;
+	}
 }
