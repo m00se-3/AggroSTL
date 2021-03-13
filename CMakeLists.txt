@@ -12,18 +12,17 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES Clang)
    list(APPEND flags "-Wall -Wextra" "-Wpedantic")
 endif(CMAKE_CXX_COMPILER_ID MATCHES MSVC)
 
-add_library(aggrostl STATIC)
+add_library(aggrostl OBJECT)
+add_executable(arrays)
+include(${CMAKE_CURRENT_LIST_DIR}/AggroSTL/CMakeLists.txt)
 
 target_compile_features(aggrostl PRIVATE cxx_std_20)
 target_compile_options(aggrostl PRIVATE ${flags})
 set_target_properties(aggrostl PROPERTIES LINKER_LANGUAGE CXX)
 
-add_executable(arrays)
-
 target_compile_features(arrays PRIVATE cxx_std_20)
 target_compile_options(arrays PRIVATE ${flags})
+target_include_directories(arrays PRIVATE ${CMAKE_CURRENT_LIST_DIR}/AggroSTL/src/)
 target_link_libraries(arrays PRIVATE aggrostl)
-
-include(${CMAKE_CURRENT_LIST_DIR}/AggroSTL/CMakeLists.txt)
 
 add_test(NAME arraytest COMMAND arrays)

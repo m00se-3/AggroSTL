@@ -1,20 +1,16 @@
-module;
-
 #include <utility>
 #include <initializer_list>
 #include <optional>
 
-export module Arrays;
-
 namespace aggro
 {
-	export enum class ArrayType
+	enum class ArrayType
 	{
 		TINY, SMALL, LARGE
 	};
 
 	//Stack allocated array which supports iterators. Replaces std::array.
-	export template<typename T, unsigned int N>
+	template<typename T, unsigned int N>
 	class StArray
 	{
 		using TypeValue = T;
@@ -44,7 +40,7 @@ namespace aggro
 			for (int n = 0; n < N; n++)
 				data[n] = *(inits.begin() + n);
 		}
-		~StArray() {}
+		~StArray() = default;
 
 		StArray& operator=(const StArray& other)
 		{
@@ -82,10 +78,10 @@ namespace aggro
 			if (index < N)
 				return data[index];
 			else
-				return {};
+				return std::nullopt {};
 		}
 
-		bool Empty() const { return begin() == end(); }
+		[[nodiscard("This function does not empty the array.")]] bool Empty() const { return begin() == end(); }
 
 		Iterator begin() { return data; }
 		Iterator end() { return data + N; }
@@ -102,11 +98,11 @@ namespace aggro
 
 	/*
 		Dynamically allocated array used to replace std::vector. This class does not support
-		custom allocators, but allows you to configure how liberal the array is with memory.
-		Larger array types allocate more memory per resize but resize less often as a result.
+		custom allocators. By default the DyArrays grow exponentially, reducing calls to new.
+		The method used to resize the array upon adding a new element can be changed using the ArrayType enum.
 		This class allocates 3 Ts worth of memory on creation by default.
 	*/
-	export template<typename T, ArrayType A = ArrayType::SMALL>
+	template<typename T, ArrayType A = ArrayType::SMALL>
 	class DyArray
 	{
 		using Iterator = T*;
@@ -128,7 +124,7 @@ namespace aggro
 				if (test > 0)
 					return test;
 				else
-					return (size_t)1;
+					return static_cast<size_t>(1);
 			};
 
 			switch (A)
@@ -158,7 +154,7 @@ namespace aggro
 
 		T* Allocate(size_t cap)
 		{
-			return (T*)::operator new(cap * sizeof(T));
+			return static_cast<T*>(::operator new(cap * sizeof(T)));
 		}
 
 	public:
@@ -285,6 +281,14 @@ namespace aggro
 			capacity = 0;
 		}
 
+		std::optional<T> At(size_t index)
+		{
+			if (index < count)
+				return data[index];
+			else
+				return std::nullopt {};
+		}
+
 		//Return the first element in the array.
 		T& First() const { return data[0]; }
 
@@ -326,7 +330,7 @@ namespace aggro
 		ConstRevIterator rend() const { return data; }
 
 		//Is the array empty?
-		bool Empty() const { return begin() == end(); }
+		[[nodiscard("This function does not empty the array.")]] bool Empty() const { return begin() == end(); }
 
 		//Allocate enough memory for the provided number of elements.
 		void Reserve(size_t cap)
@@ -375,27 +379,20 @@ namespace aggro
 		//Erase the last element. Similar to pop_back.
 		void PopBack()
 		{
-			if (count > 0)
-			{
-				--count;
-				data[count].~T();
-			}
-			else
-			{
-				data[count].~T();
-			}
+			if (count > 0) --count;
+			
+			data[count].~T();
 		}
 
 		//Erase all elements from the starting point to the stopping point.
 		//If start is nullptr, this will start at the begining of the array.
 		//If stop is nullptr, this will stop at the end of the array.
-		void Erase(T* start, T* stop = nullptr)
+		void Erase(T* start, T* stop = end())
 		{
 			if (start == end()) return;
 			if (start == nullptr) start = begin();
-			if (stop == nullptr) stop = end();
 
-			while (start < stop)
+			while (start != stop)
 			{
 				start->~T();
 				count--;
