@@ -94,6 +94,8 @@ namespace aggro
 
 		ConstRevIterator rbegin() const { return data + N; }
 		ConstRevIterator rend() const { return data; }
+
+		
 	};
 
 	/*
