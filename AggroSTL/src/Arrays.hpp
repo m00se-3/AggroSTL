@@ -1,6 +1,8 @@
 #include <utility>
 #include <initializer_list>
 #include <optional>
+#include <concepts>
+#include <ostream>
 
 namespace aggro
 {
@@ -73,12 +75,13 @@ namespace aggro
 		constexpr size_t Bytes() const { return N * sizeof(T); }
 
 		T* Data() { return data; }
+
 		std::optional<T> At(size_t index)
 		{
 			if (index < N)
 				return data[index];
 			else
-				return std::nullopt {};
+				return std::nullopt;
 		}
 
 		[[nodiscard("This function does not empty the array.")]] bool Empty() const { return begin() == end(); }
@@ -288,7 +291,7 @@ namespace aggro
 			if (index < count)
 				return data[index];
 			else
-				return std::nullopt {};
+				return std::nullopt;
 		}
 
 		//Return the first element in the array.
@@ -419,5 +422,37 @@ namespace aggro
 		arr.count = 0;
 		arr.capacity = 0;
 		arr.data = nullptr;
+	}
+
+	template<typename T, size_t N>
+	inline std::ostream& operator<<(std::ostream& stream, const StArray<T, N>& obj) requires std::is_pod_v<T>
+	{
+		stream << "{ ";
+
+		for(int ind = 0; ind < N - 1; ++ind)
+			stream << obj[ind] << ", ";
+		
+		stream << obj[N-1] << " }";
+
+		return stream;
+	}
+
+	template<typename T, ArrayType A>
+	inline std::ostream& operator<<(std::ostream& stream, const DyArray<T, A>& obj) requires std::is_pod_v<T>
+	{
+		stream << "{ ";
+
+		if(obj.Size() > 0)
+		{
+			size_t size = obj.Size() - 1;
+
+			for(int ind = 0; ind < size; ++ind)
+				stream << obj[ind] << ", ";
+			
+			stream << obj[size];
+		}
+			stream  << " }";
+
+		return stream;
 	}
 }
