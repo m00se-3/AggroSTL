@@ -6,6 +6,16 @@
 
 namespace aggro
 {
+	/*
+		This concept is satisfied if an overload exists for the ostream(<<) and istream(>>) operators.
+		Plain Old Datatypes(PODs) also satisfy this constraint.
+	*/
+	template<typename T> concept StreamCompatible = requires (std::ostream os, std::istream is, T type)
+	{
+		{ os << type };
+		{ is >> type };
+	};
+
 	enum class ArrayType
 	{
 		TINY, SMALL, LARGE
@@ -40,7 +50,7 @@ namespace aggro
 		StArray(const std::initializer_list<T>& inits)
 		{
 			for (int n = 0; n < N; n++)
-				data[n] = *(inits.begin() + n);
+				new(&data[n]) T(std::move(*(inits.begin() + n)));
 		}
 		~StArray() = default;
 
@@ -63,7 +73,7 @@ namespace aggro
 		StArray& operator=(const std::initializer_list<T>& inits)
 		{
 			for (int n = 0; n < N; n++)
-				data[n] = *(inits.begin() + n);
+				new(&data[n]) T(std::move(*(inits.begin() + n)));
 
 			return *this;
 		}
@@ -178,13 +188,13 @@ namespace aggro
 		}
 
 		DyArray(std::initializer_list<T>&& inits)
-			: capacity(inits.size())
+			: capacity(inits.size()), count(0)
 		{
 			data = Allocate(capacity);
 			for (int i = 0; i < capacity; i++)
 			{
-				data[i] = *(inits.begin() + i);
-				count++;
+				new(&data[i]) T(std::move(*(inits.begin() + i)));
+				++count;
 			}
 		}
 
@@ -272,8 +282,8 @@ namespace aggro
 
 			for (int i = 0; i < capacity; i++)
 			{
-				data[i] = *(list.begin() + i);
-				count++;
+				new(&data[i]) T(std::move(*(list.begin() + i)));
+				++count;
 			}
 
 			return *this;
@@ -424,8 +434,8 @@ namespace aggro
 		arr.data = nullptr;
 	}
 
-	template<typename T, size_t N>
-	inline std::ostream& operator<<(std::ostream& stream, const StArray<T, N>& obj) requires std::is_pod_v<T>
+	template<StreamCompatible T, size_t N>
+	inline std::ostream& operator<<(std::ostream& stream, const StArray<T, N>& obj)
 	{
 		stream << "{ ";
 
@@ -437,8 +447,8 @@ namespace aggro
 		return stream;
 	}
 
-	template<typename T, ArrayType A>
-	inline std::ostream& operator<<(std::ostream& stream, const DyArray<T, A>& obj) requires std::is_pod_v<T>
+	template<StreamCompatible T, ArrayType A>
+	inline std::ostream& operator<<(std::ostream& stream, const DyArray<T, A>& obj)
 	{
 		stream << "{ ";
 
