@@ -1,21 +1,10 @@
 #include <utility>
 #include <initializer_list>
 #include <optional>
-#include <concepts>
-#include <ostream>
+#include "AggroConcepts.hpp"
 
 namespace aggro
 {
-	/*
-		This concept is satisfied if an overload exists for the ostream(<<) and istream(>>) operators.
-		Plain Old Datatypes(PODs) also satisfy this constraint.
-	*/
-	template<typename T> concept StreamCompatible = requires (std::ostream os, std::istream is, T type)
-	{
-		{ os << type };
-		{ is >> type };
-	};
-
 	enum class ArrayType
 	{
 		TINY, SMALL, LARGE
@@ -434,7 +423,7 @@ namespace aggro
 		arr.data = nullptr;
 	}
 
-	template<StreamCompatible T, size_t N>
+	template<OStreamCompatible T, size_t N>
 	inline std::ostream& operator<<(std::ostream& stream, const StArray<T, N>& obj)
 	{
 		stream << "{ ";
@@ -447,7 +436,7 @@ namespace aggro
 		return stream;
 	}
 
-	template<StreamCompatible T, ArrayType A>
+	template<OStreamCompatible T, ArrayType A>
 	inline std::ostream& operator<<(std::ostream& stream, const DyArray<T, A>& obj)
 	{
 		stream << "{ ";
