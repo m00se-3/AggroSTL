@@ -24,6 +24,12 @@ namespace aggro
 		{ is << type } -> std::same_as<std::istream&>;
 	};
 
+	/*
+		This concept is satisfied if both stream operators (<< and >>) are implemented.
+		Plain Old Datatypes(PODs) also satisfy this constraint.
+	*/
+	template<typename T> concept IOStreamCompatible = IStreamCompatible<T> && OStreamCompatible<T>;
+
 } // namespace aggro
 
 
