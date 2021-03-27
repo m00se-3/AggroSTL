@@ -36,7 +36,7 @@ namespace aggro
 				data[n] = other[n];
 		}
 
-		StArray(const std::initializer_list<T>& inits)
+		StArray(std::initializer_list<T>&& inits)
 		{
 			for (int n = 0; n < N; n++)
 				new(&data[n]) T(std::move(*(inits.begin() + n)));
@@ -59,7 +59,7 @@ namespace aggro
 			return *this;
 		}
 
-		StArray& operator=(const std::initializer_list<T>& inits)
+		StArray& operator=(std::initializer_list<T>&& inits)
 		{
 			for (int n = 0; n < N; n++)
 				new(&data[n]) T(std::move(*(inits.begin() + n)));
