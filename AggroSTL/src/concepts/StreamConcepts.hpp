@@ -1,5 +1,5 @@
-#ifndef AGGROCONCEPTS_HPP
-#define AGGROCONCEPTS_HPP
+#ifndef STREAMCONCEPTS_HPP
+#define STREAMCONCEPTS_HPP
 
 #include <concepts>
 #include <ostream>
@@ -33,4 +33,4 @@ namespace aggro
 } // namespace aggro
 
 
-#endif // AGGROCONCEPTS_HPP
+#endif // STREAMCONCEPTS_HPP
