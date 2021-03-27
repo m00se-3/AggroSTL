@@ -266,10 +266,13 @@ namespace aggro
 		DyArray& operator=(std::initializer_list<T>&& list)
 		{
 			Clear();
-			::operator delete(data, capacity * sizeof(T));
-
-			capacity = list.Size();
-			data = Allocate(capacity);
+			
+			if(list.size() > Capacity())
+			{
+				::operator delete(data, capacity * sizeof(T));
+				capacity = list.size();
+				data = Allocate(capacity);
+			}
 
 			for (int i = 0; i < capacity; i++)
 			{

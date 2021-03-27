@@ -5,8 +5,15 @@
 
 int main()
 {
-    aggro::StArray<std::string, 2> fs = { "Hello", "World" };
+    aggro::DyArray<std::string> fs;
     aggro::StArray<int, 5> is = { 1, 2, 3, 4, 5 };
 
+    aggro::StArray<int, 5> other = { 6, 7, 8, 9, 0 };
+
+    other = is;
+    fs  = { "Hello", "World", "Again" };
+
     std::cout << is << '\n';
+    std::cout << other << '\n';
+    std::cout << fs << '\n';
 }
