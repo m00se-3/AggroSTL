@@ -5,9 +5,9 @@
 
 namespace aggro
 {
-	enum class ArrayType
+	enum class ArrayExpandMethod : uint8_t
 	{
-		TINY, SMALL, LARGE
+		INCREMENT = 0, PLUS_HALF, DOUBLE
 	};
 
 	//Stack allocated array which supports iterators. Replaces std::array.
@@ -106,7 +106,7 @@ namespace aggro
 		The method used to resize the array upon adding a new element can be changed using the ArrayType enum.
 		This class allocates 3 Ts worth of memory on creation by default.
 	*/
-	template<typename T, ArrayType A = ArrayType::SMALL>
+	template<typename T>
 	class DyArray
 	{
 		using Iterator = T*;
@@ -124,22 +124,22 @@ namespace aggro
 			size_t nCap;
 			size_t oCap = capacity;
 
-			auto decide = [](size_t test) {
+			auto decide = [](size_t test) -> size_t {
 				if (test > 0)
 					return test;
 				else
-					return static_cast<size_t>(1);
+					return 1;
 			};
 
-			switch (A)
+			switch (ExpandMethod)
 			{
-			case ArrayType::TINY:
+			case ArrayExpandMethod::INCREMENT:
 				nCap = decide(capacity + 1);
 				break;
-			case ArrayType::SMALL:
+			case ArrayExpandMethod::PLUS_HALF:
 				nCap = decide(capacity + (capacity / 2));
 				break;
-			case ArrayType::LARGE:
+			case ArrayExpandMethod::DOUBLE:
 				nCap = decide(capacity * 2);
 				break;
 			}
@@ -164,6 +164,8 @@ namespace aggro
 	public:
 
 		friend void NullifyArray(const DyArray& arr);
+
+		ArrayExpandMethod ExpandMethod = ArrayExpandMethod::PLUS_HALF;
 
 		DyArray()
 		{
@@ -415,8 +417,8 @@ namespace aggro
 	};
 
 	//Used for move operations.
-	template<typename T, ArrayType A>
-	void NullifyArray(const DyArray<T,A>& arr)
+	template<typename T>
+	void NullifyArray(const DyArray<T>& arr)
 	{
 		arr.count = 0;
 		arr.capacity = 0;
@@ -436,8 +438,8 @@ namespace aggro
 		return stream;
 	}
 
-	template<OStreamCompatible T, ArrayType A>
-	inline std::ostream& operator<<(std::ostream& stream, const DyArray<T, A>& obj)
+	template<OStreamCompatible T>
+	inline std::ostream& operator<<(std::ostream& stream, const DyArray<T>& obj)
 	{
 		stream << "{ ";
 
