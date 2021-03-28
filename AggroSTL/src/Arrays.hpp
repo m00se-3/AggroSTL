@@ -10,7 +10,7 @@ namespace aggro
 		INCREMENT = 0, PLUS_HALF, DOUBLE
 	};
 
-	//Stack allocated array which supports iterators. Replaces std::array.
+	//Stack Reallocated array which supports iterators. Replaces std::array.
 	template<typename T, unsigned int N>
 	class StArray
 	{
@@ -101,10 +101,10 @@ namespace aggro
 	};
 
 	/*
-		Dynamically allocated array used to replace std::vector. This class does not support
+		Dynamically Reallocated array used to replace std::vector. This class does not support
 		custom allocators. By default the DyArrays grow exponentially, reducing calls to new.
 		The method used to resize the array upon adding a new element can be changed using the ArrayType enum.
-		This class allocates 3 Ts worth of memory on creation by default.
+		This class Reallocates 3 Ts worth of memory on creation by default.
 	*/
 	template<typename T>
 	class DyArray
@@ -144,7 +144,7 @@ namespace aggro
 				break;
 			}
 
-			data = Allocate(nCap);
+			data = Reallocate(nCap);
 			capacity = nCap;
 
 			for (int i = 0; i < count; i++)
@@ -156,7 +156,7 @@ namespace aggro
 			::operator delete(temp, oCap * sizeof(T));
 		}
 
-		T* Allocate(size_t cap)
+		T* Reallocate(size_t cap)
 		{
 			return static_cast<T*>(::operator new(cap * sizeof(T)));
 		}
@@ -169,19 +169,19 @@ namespace aggro
 
 		DyArray()
 		{
-			data = Allocate(capacity);
+			data = Reallocate(capacity);
 		}
 
 		DyArray(size_t cap)
 			: capacity(cap)
 		{
-			data = Allocate(cap);
+			data = Reallocate(cap);
 		}
 
 		DyArray(std::initializer_list<T>&& inits)
 			: capacity(inits.size()), count(0)
 		{
-			data = Allocate(capacity);
+			data = Reallocate(capacity);
 			for (int i = 0; i < capacity; i++)
 			{
 				new(&data[i]) T(std::move(*(inits.begin() + i)));
@@ -192,7 +192,7 @@ namespace aggro
 		DyArray(const DyArray& other)
 			: count(other.Size()), capacity(other.Capacity())
 		{
-			data = Allocate(capacity);
+			data = Reallocate(capacity);
 
 			if (data != nullptr)
 			{
@@ -231,7 +231,7 @@ namespace aggro
 				count = other.Size();
 				capacity = other.Capacity();
 
-				data = Allocate(capacity);
+				data = Reallocate(capacity);
 
 				if (data != nullptr)
 				{
@@ -271,7 +271,7 @@ namespace aggro
 			{
 				::operator delete(data, capacity * sizeof(T));
 				capacity = list.size();
-				data = Allocate(capacity);
+				data = Reallocate(capacity);
 			}
 
 			for (int i = 0; i < capacity; i++)
@@ -341,12 +341,12 @@ namespace aggro
 		//Is the array empty?
 		[[nodiscard("This function does not empty the array.")]] bool Empty() const { return begin() == end(); }
 
-		//Allocate enough memory for the provided number of elements.
+		//Reallocate enough memory for the provided number of elements.
 		void Reserve(size_t cap)
 		{
 			T* temp = data;
 
-			data = Allocate(cap);
+			data = Reallocate(cap);
 
 			for (int i = 0; i < count; i++)
 			{
