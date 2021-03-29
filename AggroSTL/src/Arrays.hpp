@@ -2,6 +2,7 @@
 #include <initializer_list>
 #include <optional>
 #include "concepts/StreamConcepts.hpp"
+#include "allocators/STDAllocator.hpp"
 
 namespace aggro
 {
@@ -14,6 +15,8 @@ namespace aggro
 	template<typename T, unsigned int N>
 	class StArray
 	{
+	
+	private:
 		using TypeValue = T;
 		using Iterator = T*;
 		using ConstIterator = const T*;
@@ -23,6 +26,8 @@ namespace aggro
 		T data[N];
 
 	public:
+		using SizeType = std::size_t;
+
 		StArray() = default;
 		StArray(const StArray& other)
 		{
@@ -70,12 +75,12 @@ namespace aggro
 		T& operator[](size_t index) { return data[index]; }
 		const T& operator[](size_t index) const { return data[index]; }
 
-		constexpr size_t Size() const { return N; }
-		constexpr size_t Bytes() const { return N * sizeof(T); }
+		constexpr SizeType Size() const { return N; }
+		constexpr SizeType Bytes() const { return N * sizeof(T); }
 
 		T* Data() { return data; }
 
-		std::optional<T> At(size_t index)
+		std::optional<T> At(SizeType index)
 		{
 			if (index < N)
 				return data[index];
@@ -101,30 +106,53 @@ namespace aggro
 	};
 
 	/*
-		Dynamically Reallocated array used to replace std::vector. This class does not support
-		custom allocators. By default the DyArrays grow exponentially, reducing calls to new.
+		Dynamically Reallocated array used to replace std::vector. By default the DyArrays grow exponentially, reducing calls to new.
 		The method used to resize the array upon adding a new element can be changed using the ArrayType enum.
 		This class Reallocates 3 Ts worth of memory on creation by default.
 	*/
 	template<typename T>
 	class DyArray
 	{
+	public:
+		using SizeType = std::size_t;
+
+	private:
+
 		using Iterator = T*;
 		using ConstIterator = const T*;
 		using RevIterator = T*;
 		using ConstRevIterator = const T*;
+		using Resource = struct STDAllocator
+			{
+				T* Buffer = nullptr;
 
-		T* data = nullptr;
-		size_t count = 0;
-		size_t capacity = 3;
+				void Allocate(size_t amount)
+				{
+					Buffer = static_cast<T*>(::operator new(amount * sizeof(T)));
+				}
+
+				void Deallocate(size_t amount)
+				{
+					::operator delete(Buffer, amount * sizeof(T));
+				}
+
+				void Deallocate(T* start, size_t amount)
+				{
+					::operator delete(start, amount * sizeof(T));
+				}
+			};
+
+		Resource alloc;
+		SizeType count {};
+		SizeType capacity {};
 
 		void Grow()
 		{
-			T* temp = data;
-			size_t nCap;
-			size_t oCap = capacity;
+			T* temp = alloc.Buffer;
+			SizeType nCap;
+			SizeType oCap = capacity;
 
-			auto decide = [](size_t test) -> size_t {
+			auto decide = [](SizeType test) -> SizeType {
 				if (test > 0)
 					return test;
 				else
@@ -144,21 +172,16 @@ namespace aggro
 				break;
 			}
 
-			data = Reallocate(nCap);
+			alloc.Allocate(nCap);
 			capacity = nCap;
 
 			for (int i = 0; i < count; i++)
 			{
-				new(&data[i]) T(std::move(temp[i]));
+				new(&alloc.Buffer[i]) T(std::move(temp[i]));
 				temp[i].~T();
 			}
 
-			::operator delete(temp, oCap * sizeof(T));
-		}
-
-		T* Reallocate(size_t cap)
-		{
-			return static_cast<T*>(::operator new(cap * sizeof(T)));
+			alloc.Deallocate(temp, oCap);
 		}
 
 	public:
@@ -167,24 +190,21 @@ namespace aggro
 
 		ArrayExpandMethod ExpandMethod = ArrayExpandMethod::PLUS_HALF;
 
-		DyArray()
-		{
-			data = Reallocate(capacity);
-		}
+		DyArray() = default;
 
-		DyArray(size_t cap)
+		DyArray(SizeType cap)
 			: capacity(cap)
 		{
-			data = Reallocate(cap);
+			alloc.Allocate(cap);
 		}
 
 		DyArray(std::initializer_list<T>&& inits)
-			: capacity(inits.size()), count(0)
+			: count(0), capacity(inits.size())
 		{
-			data = Reallocate(capacity);
+			alloc.Allocate(capacity);
 			for (int i = 0; i < capacity; i++)
 			{
-				new(&data[i]) T(std::move(*(inits.begin() + i)));
+				new(&alloc.Buffer[i]) T(std::move(*(inits.begin() + i)));
 				++count;
 			}
 		}
@@ -192,13 +212,13 @@ namespace aggro
 		DyArray(const DyArray& other)
 			: count(other.Size()), capacity(other.Capacity())
 		{
-			data = Reallocate(capacity);
+			alloc.Allocate(capacity);
 
-			if (data != nullptr)
+			if (alloc.Buffer != nullptr)
 			{
 				for (int i = 0; i < count; i++)
 				{
-					new(&data[i]) T(other.Data()[i]);
+					new(&alloc.Buffer[i]) T(other.Data()[i]);
 				}
 			}
 		}
@@ -206,18 +226,18 @@ namespace aggro
 		DyArray(DyArray&& other) noexcept
 			: count(other.Size()), capacity(other.Capacity())
 		{
-			data = other.Data();
+			alloc.Buffer = other.Data();
 			NullifyArray(other);
 		}
 
-		T& operator[](size_t index)
+		T& operator[](SizeType index)
 		{
-			return data[index];
+			return alloc.Buffer[index];
 		}
 
-		const T& operator[](size_t index) const
+		const T& operator[](SizeType index) const
 		{
-			return data[index];
+			return alloc.Buffer[index];
 		}
 
 		DyArray& operator=(const DyArray& other)
@@ -225,19 +245,19 @@ namespace aggro
 			if (this != &other)
 			{
 				Clear();
-				::operator delete(data, capacity * sizeof(T));
+				alloc.Deallocate(capacity);
 
 
 				count = other.Size();
 				capacity = other.Capacity();
 
-				data = Reallocate(capacity);
+				alloc.Allocate(capacity);
 
-				if (data != nullptr)
+				if (alloc.Buffer != nullptr)
 				{
 					for (int i = 0; i < count; i++)
 					{
-						new(&data[i]) T(other.Data()[i]);
+						new(&alloc.Buffer[i]) T(other.Data()[i]);
 					}
 				}
 			}
@@ -245,17 +265,17 @@ namespace aggro
 			return *this;
 		}
 
-		DyArray& operator=(DyArray&& other) noexcept
+		DyArray& operator=(DyArray&& other) noexcept 
 		{
 			if (this != &other)
 			{
 				Clear();
-				::operator delete(data, capacity * sizeof(T));
+				alloc.Deallocate(capacity);
 
 				count = other.Size();
 				capacity = other.Capacity();
 
-				data = other.Data();
+				alloc.Buffer = other.Data();
 
 				NullifyArray(other);
 			}
@@ -269,14 +289,14 @@ namespace aggro
 			
 			if(list.size() > Capacity())
 			{
-				::operator delete(data, capacity * sizeof(T));
+				alloc.Deallocate(capacity);
 				capacity = list.size();
-				data = Reallocate(capacity);
+				alloc.Allocate(capacity);
 			}
 
 			for (int i = 0; i < capacity; i++)
 			{
-				new(&data[i]) T(std::move(*(list.begin() + i)));
+				new(&alloc.Buffer[i]) T(std::move(*(list.begin() + i)));
 				++count;
 			}
 
@@ -286,32 +306,32 @@ namespace aggro
 		~DyArray()
 		{
 			Clear();
-			::operator delete(data, capacity * sizeof(T));
+			alloc.Deallocate(capacity);
 			capacity = 0;
 		}
 
-		std::optional<T> At(size_t index)
+		std::optional<T> At(SizeType index)
 		{
 			if (index < count)
-				return data[index];
+				return alloc.Buffer[index];
 			else
 				return std::nullopt;
 		}
 
 		//Return the first element in the array.
-		T& First() const { return data[0]; }
+		T& First() const { return alloc.Buffer[0]; }
 
 		//Return the last element in the array.
-		T& Last() const { return data[count - 1]; }
+		T& Last() const { return alloc.Buffer[count - 1]; }
 
 		//Number of elements contained.
-		size_t Size() const
+		SizeType Size() const
 		{
 			return count;
 		}
 
 		//Number of elements able to be held.
-		size_t Capacity() const
+		SizeType Capacity() const
 		{
 			return capacity;
 		}
@@ -323,38 +343,38 @@ namespace aggro
 		}
 
 		//Return raw pointer to the array data.
-		const T* Data() const { return data; }
-		T* Data() { return data; }
+		const T* Data() const { return alloc.Buffer; }
+		T* Data() { return alloc.Buffer; }
 
-		ConstIterator begin() const { return data; }
-		Iterator begin() { return data; }
+		ConstIterator begin() const { return alloc.Buffer; }
+		Iterator begin() { return alloc.Buffer; }
 
-		ConstIterator end() const { return data + count; }
-		Iterator end() { return data + count; }
+		ConstIterator end() const { return alloc.Buffer + count; }
+		Iterator end() { return alloc.Buffer + count; }
 
-		RevIterator rbegin() { return data + count; }
-		RevIterator rend() { return data; }
+		RevIterator rbegin() { return alloc.Buffer + count; }
+		RevIterator rend() { return alloc.Buffer; }
 
-		ConstRevIterator rbegin() const { return data + count; }
-		ConstRevIterator rend() const { return data; }
+		ConstRevIterator rbegin() const { return alloc.Buffer + count; }
+		ConstRevIterator rend() const { return alloc.Buffer; }
 
 		//Is the array empty?
 		[[nodiscard("This function does not empty the array.")]] bool Empty() const { return begin() == end(); }
 
 		//Reallocate enough memory for the provided number of elements.
-		void Reserve(size_t cap)
+		void Reserve(SizeType cap)
 		{
-			T* temp = data;
+			T* temp = alloc.Buffer;
 
-			data = Reallocate(cap);
+			alloc.Allocate(cap);
 
 			for (int i = 0; i < count; i++)
 			{
-				new(&data[i]) T(std::move(temp[i]));
+				new(&alloc.Buffer[i]) T(std::move(temp[i]));
 				temp[i].~T();
 			}
 
-			::operator delete(temp, capacity * sizeof(T));
+			alloc.Deallocate(temp, capacity);
 
 			capacity = cap;
 		}
@@ -380,7 +400,7 @@ namespace aggro
 			if (count >= capacity)
 				Grow();
 
-			new(&data[count]) T(std::forward<Args>(args)...);
+			new(&alloc.Buffer[count]) T(std::forward<Args>(args)...);
 
 			++count;
 		}
@@ -390,14 +410,15 @@ namespace aggro
 		{
 			if (count > 0) --count;
 			
-			data[count].~T();
+			alloc.Buffer[count].~T();
 		}
 
 		//Erase all elements from the starting point to the stopping point.
 		//If start is nullptr, this will start at the begining of the array.
 		//If stop is nullptr, this will stop at the end of the array.
-		void Erase(T* start, T* stop = end())
+		void Erase(T* start, T* stop = nullptr)
 		{
+			if(stop == nullptr) stop = end();
 			if (start == end()) return;
 			if (start == nullptr) start = begin();
 
@@ -413,7 +434,7 @@ namespace aggro
 		void Clear()
 		{
 			for (int i = 0; i < count; i++)
-				data[i].~T();
+				alloc.Buffer[i].~T();
 
 			count = 0;
 		}
@@ -425,7 +446,7 @@ namespace aggro
 	{
 		arr.count = 0;
 		arr.capacity = 0;
-		arr.data = nullptr;
+		arr.alloc.Buffer = nullptr;
 	}
 
 	template<OStreamCompatible T, size_t N>
@@ -448,7 +469,7 @@ namespace aggro
 
 		if(obj.Size() > 0)
 		{
-			size_t size = obj.Size() - 1;
+			auto size = obj.Size() - 1;
 
 			for(int ind = 0; ind < size; ++ind)
 				stream << obj[ind] << ", ";
