@@ -10,9 +10,12 @@ namespace aggro
     concept Pointer = std::is_pointer_v<T>;
 
     template<typename T>
+    concept PointerToBuffer = Pointer<T> && std::is_array_v<T>;
+
+    template<typename T>
     concept StandardAllocator = requires (T type, size_t size)
     {
-        Pointer<decltype(type.Buffer)>;
+        PointerToBuffer<decltype(type.Buffer)>;
         { type.Allocate(size) };
         { type.Deallocate(size) };
         { type.Deallocate(type.Buffer, size) };
