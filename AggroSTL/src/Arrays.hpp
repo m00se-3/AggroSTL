@@ -110,7 +110,7 @@ namespace aggro
 		The method used to resize the array upon adding a new element can be changed using the ArrayType enum.
 		This class Reallocates 3 Ts worth of memory on creation by default.
 	*/
-	template<typename T>
+	template<typename T, StandardAllocator Alloc = STDAllocator<T>>
 	class DyArray
 	{
 	public:
@@ -122,25 +122,7 @@ namespace aggro
 		using ConstIterator = const T*;
 		using RevIterator = T*;
 		using ConstRevIterator = const T*;
-		using Resource = struct STDAllocator
-			{
-				T* Buffer = nullptr;
-
-				void Allocate(size_t amount)
-				{
-					Buffer = static_cast<T*>(::operator new(amount * sizeof(T)));
-				}
-
-				void Deallocate(size_t amount)
-				{
-					::operator delete(Buffer, amount * sizeof(T));
-				}
-
-				void Deallocate(T* start, size_t amount)
-				{
-					::operator delete(start, amount * sizeof(T));
-				}
-			};
+		using Resource = Alloc;
 
 		Resource alloc;
 		SizeType count {};
