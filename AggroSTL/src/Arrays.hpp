@@ -11,7 +11,7 @@ namespace aggro
 		INCREMENT = 0, PLUS_HALF, DOUBLE
 	};
 
-	//Stack Reallocated array which supports iterators. Replaces std::array.
+	//Stack allocated array which supports iterators. Replaces std::array.
 	template<typename T, unsigned int N>
 	class StArray
 	{
@@ -72,8 +72,8 @@ namespace aggro
 			return *this;
 		}
 
-		T& operator[](size_t index) { return data[index]; }
-		const T& operator[](size_t index) const { return data[index]; }
+		T& operator[](SizeType index) { return data[index]; }
+		const T& operator[](SizeType index) const { return data[index]; }
 
 		constexpr SizeType Size() const { return N; }
 		constexpr SizeType Bytes() const { return N * sizeof(T); }
@@ -106,9 +106,8 @@ namespace aggro
 	};
 
 	/*
-		Dynamically Reallocated array used to replace std::vector. By default the DyArrays grow exponentially, reducing calls to new.
-		The method used to resize the array upon adding a new element can be changed using the ArrayType enum.
-		This class Reallocates 3 Ts worth of memory on creation by default.
+		Dynamically allocated array which replaces std::vector. By default the DyArrays grow exponentially, reducing calls to new.
+		The method used to resize the array upon adding a new element can be changed using the ArrayExpandMethod enum.
 	*/
 	template<typename T, StandardAllocator Alloc = STDAllocator<T>>
 	class DyArray
