@@ -12,7 +12,7 @@ namespace aggro
 	};
 
 	//Stack allocated array which supports iterators. Replaces std::array.
-	template<typename T, unsigned int N>
+	template<typename T, std::size_t N>
 	class StArray
 	{
 	
@@ -31,26 +31,26 @@ namespace aggro
 		StArray() = default;
 		StArray(const StArray& other)
 		{
-			for (int n = 0; n < N; n++)
+			for (SizeType n = 0; n < Size(); n++)
 				data[n] = other[n];
 		}
 
 		StArray(StArray&& other) noexcept
 		{
-			for (int n = 0; n < N; n++)
+			for (SizeType n = 0; n < Size(); n++)
 				data[n] = other[n];
 		}
 
 		StArray(std::initializer_list<T>&& inits)
 		{
-			for (int n = 0; n < N; n++)
+			for (SizeType n = 0; n < Size(); n++)
 				new(&data[n]) T(std::move(*(inits.begin() + n)));
 		}
 		~StArray() = default;
 
 		StArray& operator=(const StArray& other)
 		{
-			for (int n = 0; n < N; n++)
+			for (SizeType n = 0; n < Size(); n++)
 				data[n] = other[n];
 
 			return *this;
@@ -58,7 +58,7 @@ namespace aggro
 
 		StArray& operator=(StArray&& other) noexcept
 		{
-			for (int n = 0; n < N; n++)
+			for (SizeType n = 0; n < Size(); n++)
 				data[n] = other[n];
 
 			return *this;
@@ -66,14 +66,21 @@ namespace aggro
 
 		StArray& operator=(std::initializer_list<T>&& inits)
 		{
-			for (int n = 0; n < N; n++)
+			for (SizeType n = 0; n < Size(); n++)
 				new(&data[n]) T(std::move(*(inits.begin() + n)));
 
 			return *this;
 		}
 
-		T& operator[](SizeType index) { return data[index]; }
-		const T& operator[](SizeType index) const { return data[index]; }
+		T& operator[](SizeType index) 
+		{
+			return data[index]; 
+		}
+
+		const T& operator[](SizeType index) const 
+		{
+			return data[index]; 
+		}
 
 		constexpr SizeType Size() const { return N; }
 		constexpr SizeType Bytes() const { return N * sizeof(T); }
@@ -156,7 +163,7 @@ namespace aggro
 			alloc.Allocate(nCap);
 			capacity = nCap;
 
-			for (int i = 0; i < count; i++)
+			for (SizeType i = 0; i < count; i++)
 			{
 				new(&alloc.Buffer[i]) T(std::move(temp[i]));
 				temp[i].~T();
@@ -183,7 +190,7 @@ namespace aggro
 			: count(0), capacity(inits.size())
 		{
 			alloc.Allocate(capacity);
-			for (int i = 0; i < capacity; i++)
+			for (SizeType i = 0; i < capacity; i++)
 			{
 				new(&alloc.Buffer[i]) T(std::move(*(inits.begin() + i)));
 				++count;
@@ -197,7 +204,7 @@ namespace aggro
 
 			if (alloc.Buffer != nullptr)
 			{
-				for (int i = 0; i < count; i++)
+				for (SizeType i = 0; i < count; i++)
 				{
 					new(&alloc.Buffer[i]) T(other.Data()[i]);
 				}
@@ -236,7 +243,7 @@ namespace aggro
 
 				if (alloc.Buffer != nullptr)
 				{
-					for (int i = 0; i < count; i++)
+					for (SizeType i = 0; i < count; i++)
 					{
 						new(&alloc.Buffer[i]) T(other.Data()[i]);
 					}
@@ -275,7 +282,7 @@ namespace aggro
 				alloc.Allocate(capacity);
 			}
 
-			for (int i = 0; i < capacity; i++)
+			for (SizeType i = 0; i < capacity; i++)
 			{
 				new(&alloc.Buffer[i]) T(std::move(*(list.begin() + i)));
 				++count;
@@ -349,7 +356,7 @@ namespace aggro
 
 			alloc.Allocate(cap);
 
-			for (int i = 0; i < count; i++)
+			for (SizeType i = 0; i < count; i++)
 			{
 				new(&alloc.Buffer[i]) T(std::move(temp[i]));
 				temp[i].~T();
@@ -414,7 +421,7 @@ namespace aggro
 		//Clears the whole array and resets the push counter.
 		void Clear()
 		{
-			for (int i = 0; i < count; i++)
+			for (SizeType i = 0; i < count; i++)
 				alloc.Buffer[i].~T();
 
 			count = 0;
@@ -435,7 +442,7 @@ namespace aggro
 	{
 		stream << "{ ";
 
-		for(int ind = 0; ind < N - 1; ++ind)
+		for(size_t ind = 0; ind < N - 1; ++ind)
 			stream << obj[ind] << ", ";
 		
 		stream << obj[N-1] << " }";
@@ -452,7 +459,7 @@ namespace aggro
 		{
 			auto size = obj.Size() - 1;
 
-			for(int ind = 0; ind < size; ++ind)
+			for(size_t ind = 0; ind < size; ++ind)
 				stream << obj[ind] << ", ";
 			
 			stream << obj[size];
