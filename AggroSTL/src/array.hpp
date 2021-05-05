@@ -87,7 +87,7 @@ namespace aggro
 
 		T* data() { return m_data; }
 
-		std::optional<T> At(size_type index)
+		std::optional<T> at(size_type index)
 		{
 			if (index < N)
 				return m_data[index];
@@ -298,7 +298,7 @@ namespace aggro
 			m_capacity = 0;
 		}
 
-		std::optional<T> At(size_type index)
+		std::optional<T> at(size_type index)
 		{
 			if (index < m_count)
 				return alloc.m_buffer[index];
