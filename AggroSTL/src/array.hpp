@@ -17,38 +17,43 @@ namespace aggro
 	{
 	
 	private:
-		using value_type = T;
-		using iterator = T*;
-		using constiterator = const T*;
-		using reviterator = T*;
-		using constreviterator = const T*;
-
 		T m_data[N];
 
 	public:
+		using value_type = T;
 		using size_type = std::size_t;
 
-		array() = default;
-		array(const array& other)
+		using reference = T&;
+		using const_reference = const T&;
+		using pointer = T*;
+		using const_pointer = const T*;
+
+		using iterator = T*;
+		using const_iterator = const T*;
+		using reverse_iterator = T*;
+		using const_reverse_iterator = const T*;
+
+		constexpr array() = default;
+		constexpr array(const array& other)
 		{
 			for (size_type n = 0; n < size(); n++)
 				m_data[n] = other[n];
 		}
 
-		array(array&& other) noexcept
+		constexpr array(array&& other) noexcept
 		{
 			for (size_type n = 0; n < size(); n++)
 				m_data[n] = other[n];
 		}
 
-		array(std::initializer_list<T>&& inits)
+		constexpr array(std::initializer_list<T>&& inits)
 		{
 			for (size_type n = 0; n < size(); n++)
 				new(&m_data[n]) T(std::move(*(inits.begin() + n)));
 		}
-		~array() = default;
+		constexpr ~array() = default;
 
-		array& operator=(const array& other)
+		constexpr array& operator=(const array& other)
 		{
 			for (size_type n = 0; n < size(); n++)
 				m_data[n] = other[n];
@@ -56,7 +61,7 @@ namespace aggro
 			return *this;
 		}
 
-		array& operator=(array&& other) noexcept
+		constexpr array& operator=(array&& other) noexcept
 		{
 			for (size_type n = 0; n < size(); n++)
 				m_data[n] = other[n];
@@ -64,7 +69,7 @@ namespace aggro
 			return *this;
 		}
 
-		array& operator=(std::initializer_list<T>&& inits)
+		constexpr array& operator=(std::initializer_list<T>&& inits)
 		{
 			for (size_type n = 0; n < size(); n++)
 				new(&m_data[n]) T(std::move(*(inits.begin() + n)));
@@ -72,7 +77,7 @@ namespace aggro
 			return *this;
 		}
 
-		T& operator[](size_type index) 
+		constexpr T& operator[](size_type index) 
 		{
 			return m_data[index]; 
 		}
@@ -85,9 +90,9 @@ namespace aggro
 		constexpr size_type size() const { return N; }
 		constexpr size_type bytes() const { return N * sizeof(T); }
 
-		T* data() { return m_data; }
+		constexpr T* data() { return m_data; }
 
-		std::optional<T> at(size_type index)
+		constexpr std::optional<T> at(size_type index)
 		{
 			if (index < N)
 				return m_data[index];
@@ -95,19 +100,19 @@ namespace aggro
 				return std::nullopt;
 		}
 
-		[[nodiscard("This function does not empty the array.")]] bool empty() const { return begin() == end(); }
+		constexpr [[nodiscard("This function does not empty the array.")]] bool empty() const { return begin() == end(); }
 
-		iterator begin() { return m_data; }
-		iterator end() { return m_data + N; }
+		constexpr iterator begin() { return m_data; }
+		constexpr iterator end() { return m_data + N; }
 
-		constiterator begin() const { return m_data; }
-		constiterator end() const { return m_data + N; }
+		constexpr const_iterator begin() const { return m_data; }
+		constexpr const_iterator end() const { return m_data + N; }
 
-		reviterator rbegin() { return m_data + N; }
-		reviterator rend() { return m_data; }
+		constexpr reverse_iterator rbegin() { return m_data + N; }
+		constexpr reverse_iterator rend() { return m_data; }
 
-		constreviterator rbegin() const { return m_data + N; }
-		constreviterator rend() const { return m_data; }
+		constexpr const_reverse_iterator rbegin() const { return m_data + N; }
+		constexpr const_reverse_iterator rend() const { return m_data; }
 
 		
 	};
@@ -122,19 +127,25 @@ namespace aggro
 	public:
 		using size_type = std::size_t;
 
-	private:
+		using value_type = T;
+		using reference = T&;
+		using const_reference = const T&;
+		using pointer = T*;
+		using const_pointer = const T*;
 
 		using iterator = T*;
-		using constiterator = const T*;
-		using reviterator = T*;
-		using constreviterator = const T*;
-		using resource = Alloc;
+		using const_iterator = const T*;
+		using reverse_iterator = T*;
+		using const_reverse_iterator = const T*;
+		using allocator_type = Alloc;
 
-		resource alloc;
+	private:
+
+		allocator_type alloc;
 		size_type m_count {};
 		size_type m_capacity {};
 
-		void grow()
+		constexpr void grow()
 		{
 			T* temp = alloc.m_buffer;
 			size_type nCap;
@@ -174,19 +185,19 @@ namespace aggro
 
 	public:
 
-		friend void nullify_array(const dynarr& arr);
+		friend constexpr void nullify_array(const dynarr& arr);
 
 		ArrayExpandMethod expand_method = ArrayExpandMethod::PLUS_HALF;
 
-		dynarr() = default;
+		constexpr dynarr() = default;
 
-		dynarr(size_type cap)
+		constexpr dynarr(size_type cap)
 			:m_capacity(cap)
 		{
 			alloc.allocate(cap);
 		}
 
-		dynarr(std::initializer_list<T>&& inits)
+		constexpr dynarr(std::initializer_list<T>&& inits)
 			:m_count(0), m_capacity(inits.size())
 		{
 			alloc.allocate(m_capacity);
@@ -197,7 +208,7 @@ namespace aggro
 			}
 		}
 
-		dynarr(const dynarr& other)
+		constexpr dynarr(const dynarr& other)
 			:m_count(other.size()), m_capacity(other.capacity())
 		{
 			alloc.allocate(m_capacity);
@@ -211,24 +222,24 @@ namespace aggro
 			}
 		}
 
-		dynarr(dynarr&& other) noexcept
+		constexpr dynarr(dynarr&& other) noexcept
 			:m_count(other.size()), m_capacity(other.capacity())
 		{
 			alloc.m_buffer = other.data();
 			NullifyArray(other);
 		}
 
-		T& operator[](size_type index)
+		constexpr T& operator[](size_type index)
 		{
 			return alloc.m_buffer[index];
 		}
 
-		const T& operator[](size_type index) const
+		constexpr const T& operator[](size_type index) const
 		{
 			return alloc.m_buffer[index];
 		}
 
-		dynarr& operator=(const dynarr& other)
+		constexpr dynarr& operator=(const dynarr& other)
 		{
 			if (this != &other)
 			{
@@ -253,7 +264,7 @@ namespace aggro
 			return *this;
 		}
 
-		dynarr& operator=(dynarr&& other) noexcept 
+		constexpr dynarr& operator=(dynarr&& other) noexcept 
 		{
 			if (this != &other)
 			{
@@ -271,7 +282,7 @@ namespace aggro
 			return *this;
 		}
 
-		dynarr& operator=(std::initializer_list<T>&& list)
+		constexpr dynarr& operator=(std::initializer_list<T>&& list)
 		{
 			clear();
 			
@@ -291,14 +302,14 @@ namespace aggro
 			return *this;
 		}
 
-		~dynarr()
+		constexpr ~dynarr()
 		{
 			clear();
 			alloc.deallocate(m_capacity);
 			m_capacity = 0;
 		}
 
-		std::optional<T> at(size_type index)
+		constexpr std::optional<T> at(size_type index)
 		{
 			if (index < m_count)
 				return alloc.m_buffer[index];
@@ -307,50 +318,50 @@ namespace aggro
 		}
 
 		//Return the first element in the array.
-		T& front() const { return alloc.m_buffer[0]; }
+		constexpr T& front() const { return alloc.m_buffer[0]; }
 
 		//Return the last element in the array.
-		T& back() const { return alloc.m_buffer[m_count - 1]; }
+		constexpr T& back() const { return alloc.m_buffer[m_count - 1]; }
 
 		//Number of elements contained.
-		size_type size() const
+		constexpr size_type size() const
 		{
 			return m_count;
 		}
 
 		//Number of elements able to be held.
-		size_type capacity() const
+		constexpr size_type capacity() const
 		{
 			return m_capacity;
 		}
 
 		//Total size in bytes
-		size_t bytes() const
+		constexpr size_t bytes() const
 		{
 			return m_count * sizeof(T);
 		}
 
 		//Return raw pointer to the array data.
-		const T* data() const { return alloc.m_buffer; }
-		T* data() { return alloc.m_buffer; }
+		constexpr const T* data() const { return alloc.m_buffer; }
+		constexpr T* data() { return alloc.m_buffer; }
 
-		constiterator begin() const { return alloc.m_buffer; }
-		iterator begin() { return alloc.m_buffer; }
+		constexpr const_iterator begin() const { return alloc.m_buffer; }
+		constexpr iterator begin() { return alloc.m_buffer; }
 
-		constiterator end() const { return alloc.m_buffer + m_count; }
-		iterator end() { return alloc.m_buffer +m_count; }
+		constexpr const_iterator end() const { return alloc.m_buffer + m_count; }
+		constexpr iterator end() { return alloc.m_buffer +m_count; }
 
-		reviterator rbegin() { return alloc.m_buffer + m_count; }
-		reviterator rend() { return alloc.m_buffer; }
+		constexpr reverse_iterator rbegin() { return alloc.m_buffer + m_count; }
+		constexpr reverse_iterator rend() { return alloc.m_buffer; }
 
-		constreviterator rbegin() const { return alloc.m_buffer + m_count; }
-		constreviterator rend() const { return alloc.m_buffer; }
+		constexpr const_reverse_iterator rbegin() const { return alloc.m_buffer + m_count; }
+		constexpr const_reverse_iterator rend() const { return alloc.m_buffer; }
 
 		//Is the array empty?
-		[[nodiscard("This function does not empty the array.")]] bool empty() const { return begin() == end(); }
+		constexpr [[nodiscard("This function does not empty the array.")]] bool empty() const { return begin() == end(); }
 
 		//Reallocate enough memory for the provided number of elements.
-		void reserve(size_type cap)
+		constexpr void reserve(size_type cap)
 		{
 			T* temp = alloc.m_buffer;
 
@@ -368,13 +379,13 @@ namespace aggro
 		}
 
 		//Store a copy of the provided object in the array.
-		void push_back(const T& element)
+		constexpr void push_back(const T& element)
 		{
 			EmplaceBack(element);
 		}
 
 		//Move the provided object into the array.
-		void push_back(T&& element)
+		constexpr void push_back(T&& element)
 		{
 			emplace_back(std::move(element));
 		}
@@ -382,7 +393,7 @@ namespace aggro
 		//Construct an object of type T directly into the array using the
 		//provided arguments.
 		template<typename... Args>
-		void emplace_back(Args&&... args)
+		constexpr void emplace_back(Args&&... args)
 		{
 			if (m_count >=m_capacity)
 				grow();
@@ -393,7 +404,7 @@ namespace aggro
 		}
 
 		//Erase the last element. Similar to pop_back.
-		void pop_back()
+		constexpr void pop_back()
 		{
 			if (m_count > 0) --m_count;
 			
@@ -403,7 +414,7 @@ namespace aggro
 		//Erase all elements from the starting point to the stopping point.
 		//If start is nullptr, this will start at the begining of the array.
 		//If stop is nullptr, this will stop at the end of the array.
-		void erase(T* start, T* stop = nullptr)
+		constexpr void erase(T* start, T* stop = nullptr)
 		{
 			if(stop == nullptr) stop = end();
 			if (start == end()) return;
@@ -418,7 +429,7 @@ namespace aggro
 		}
 
 		//clears the whole array and resets the pushm_counter.
-		void clear()
+		constexpr void clear()
 		{
 			for (size_type i = 0; i < m_count; i++)
 				alloc.m_buffer[i].~T();
@@ -429,7 +440,7 @@ namespace aggro
 
 	//Used for move operations.
 	template<typename T>
-	void nullify_array(const dynarr<T>& arr)
+	constexpr void nullify_array(const dynarr<T>& arr)
 	{
 		arr.count = 0;
 		arr.capacity = 0;
