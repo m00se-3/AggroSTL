@@ -6,22 +6,22 @@
 namespace aggro
 {
     template<typename T>
-    struct STDAllocator
+    struct std_allocator
     {
-        using SizeType = std::size_t;
-        T* Buffer = nullptr;
+        using size_type = std::size_t;
+        T* m_buffer = nullptr;
 
-        void Allocate(SizeType amount)
+        void allocate(size_type amount)
         {
-            Buffer = static_cast<T*>(::operator new(amount * sizeof(T)));
+            m_buffer = static_cast<T*>(::operator new(amount * sizeof(T)));
         }
 
-        void Deallocate(SizeType amount)
+        void deallocate(size_type amount)
         {
-            ::operator delete(Buffer, amount * sizeof(T));
+            ::operator delete(m_buffer, amount * sizeof(T));
         }
 
-        void Deallocate(T* start, SizeType amount)
+        void deallocate(T* start, size_type amount)
         {
             ::operator delete(start, amount * sizeof(T));
         }

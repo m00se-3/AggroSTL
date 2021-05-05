@@ -7,18 +7,18 @@
 namespace aggro
 {
     template<typename T>
-    concept Pointer = std::is_pointer_v<T>;
+    concept pointer = std::is_pointer_v<T>;
 
     template<typename T>
-    concept PointerToBuffer = Pointer<T> && std::is_array_v<T>;
+    concept pointer_to_buffer = pointer<T> && std::is_array_v<T>;
 
     template<typename T>
-    concept StandardAllocator = requires (T type, size_t size)
+    concept standard_allocator = requires (T type, size_t size)
     {
-        PointerToBuffer<decltype(type.Buffer)>;
-        { type.Allocate(size) };
-        { type.Deallocate(size) };
-        { type.Deallocate(type.Buffer, size) };
+        pointer_to_buffer<decltype(type.m_buffer)>;
+        { type.allocate(size) };
+        { type.deallocate(size) };
+        { type.deallocate(type.m_buffer, size) };
     };
 
 } // namespace aggro

@@ -13,239 +13,239 @@ namespace aggro
 
 	//Stack allocated array which supports iterators. Replaces std::array.
 	template<typename T, std::size_t N>
-	class StArray
+	class array
 	{
 	
 	private:
-		using TypeValue = T;
-		using Iterator = T*;
-		using ConstIterator = const T*;
-		using RevIterator = T*;
-		using ConstRevIterator = const T*;
+		using value_type = T;
+		using iterator = T*;
+		using constiterator = const T*;
+		using reviterator = T*;
+		using constreviterator = const T*;
 
-		T data[N];
+		T m_data[N];
 
 	public:
-		using SizeType = std::size_t;
+		using size_type = std::size_t;
 
-		StArray() = default;
-		StArray(const StArray& other)
+		array() = default;
+		array(const array& other)
 		{
-			for (SizeType n = 0; n < Size(); n++)
-				data[n] = other[n];
+			for (size_type n = 0; n < size(); n++)
+				m_data[n] = other[n];
 		}
 
-		StArray(StArray&& other) noexcept
+		array(array&& other) noexcept
 		{
-			for (SizeType n = 0; n < Size(); n++)
-				data[n] = other[n];
+			for (size_type n = 0; n < size(); n++)
+				m_data[n] = other[n];
 		}
 
-		StArray(std::initializer_list<T>&& inits)
+		array(std::initializer_list<T>&& inits)
 		{
-			for (SizeType n = 0; n < Size(); n++)
-				new(&data[n]) T(std::move(*(inits.begin() + n)));
+			for (size_type n = 0; n < size(); n++)
+				new(&m_data[n]) T(std::move(*(inits.begin() + n)));
 		}
-		~StArray() = default;
+		~array() = default;
 
-		StArray& operator=(const StArray& other)
+		array& operator=(const array& other)
 		{
-			for (SizeType n = 0; n < Size(); n++)
-				data[n] = other[n];
+			for (size_type n = 0; n < size(); n++)
+				m_data[n] = other[n];
 
 			return *this;
 		}
 
-		StArray& operator=(StArray&& other) noexcept
+		array& operator=(array&& other) noexcept
 		{
-			for (SizeType n = 0; n < Size(); n++)
-				data[n] = other[n];
+			for (size_type n = 0; n < size(); n++)
+				m_data[n] = other[n];
 
 			return *this;
 		}
 
-		StArray& operator=(std::initializer_list<T>&& inits)
+		array& operator=(std::initializer_list<T>&& inits)
 		{
-			for (SizeType n = 0; n < Size(); n++)
-				new(&data[n]) T(std::move(*(inits.begin() + n)));
+			for (size_type n = 0; n < size(); n++)
+				new(&m_data[n]) T(std::move(*(inits.begin() + n)));
 
 			return *this;
 		}
 
-		T& operator[](SizeType index) 
+		T& operator[](size_type index) 
 		{
-			return data[index]; 
+			return m_data[index]; 
 		}
 
-		const T& operator[](SizeType index) const 
+		const T& operator[](size_type index) const 
 		{
-			return data[index]; 
+			return m_data[index]; 
 		}
 
-		constexpr SizeType Size() const { return N; }
-		constexpr SizeType Bytes() const { return N * sizeof(T); }
+		constexpr size_type size() const { return N; }
+		constexpr size_type bytes() const { return N * sizeof(T); }
 
-		T* Data() { return data; }
+		T* data() { return m_data; }
 
-		std::optional<T> At(SizeType index)
+		std::optional<T> At(size_type index)
 		{
 			if (index < N)
-				return data[index];
+				return m_data[index];
 			else
 				return std::nullopt;
 		}
 
-		[[nodiscard("This function does not empty the array.")]] bool Empty() const { return begin() == end(); }
+		[[nodiscard("This function does not empty the array.")]] bool empty() const { return begin() == end(); }
 
-		Iterator begin() { return data; }
-		Iterator end() { return data + N; }
+		iterator begin() { return m_data; }
+		iterator end() { return m_data + N; }
 
-		ConstIterator begin() const { return data; }
-		ConstIterator end() const { return data + N; }
+		constiterator begin() const { return m_data; }
+		constiterator end() const { return m_data + N; }
 
-		RevIterator rbegin() { return data + N; }
-		RevIterator rend() { return data; }
+		reviterator rbegin() { return m_data + N; }
+		reviterator rend() { return m_data; }
 
-		ConstRevIterator rbegin() const { return data + N; }
-		ConstRevIterator rend() const { return data; }
+		constreviterator rbegin() const { return m_data + N; }
+		constreviterator rend() const { return m_data; }
 
 		
 	};
 
 	/*
-		Dynamically allocated array which replaces std::vector. By default the DyArrays grow exponentially, reducing calls to new.
+		Dynamically allocated array which replaces std::vector. By default the dynarrs grow exponentially, reducing calls to new.
 		The method used to resize the array upon adding a new element can be changed using the ArrayExpandMethod enum.
 	*/
-	template<typename T, StandardAllocator Alloc = STDAllocator<T>>
-	class DyArray
+	template<typename T, standard_allocator Alloc = std_allocator<T>>
+	class dynarr
 	{
 	public:
-		using SizeType = std::size_t;
+		using size_type = std::size_t;
 
 	private:
 
-		using Iterator = T*;
-		using ConstIterator = const T*;
-		using RevIterator = T*;
-		using ConstRevIterator = const T*;
-		using Resource = Alloc;
+		using iterator = T*;
+		using constiterator = const T*;
+		using reviterator = T*;
+		using constreviterator = const T*;
+		using resource = Alloc;
 
-		Resource alloc;
-		SizeType count {};
-		SizeType capacity {};
+		resource alloc;
+		size_type m_count {};
+		size_type m_capacity {};
 
-		void Grow()
+		void grow()
 		{
-			T* temp = alloc.Buffer;
-			SizeType nCap;
-			SizeType oCap = capacity;
+			T* temp = alloc.m_buffer;
+			size_type nCap;
+			size_type oCap = m_capacity;
 
-			auto decide = [](SizeType test) -> SizeType {
+			auto decide = [](size_type test) -> size_type {
 				if (test > 0)
 					return test;
 				else
 					return 1;
 			};
 
-			switch (ExpandMethod)
+			switch (expand_method)
 			{
 			case ArrayExpandMethod::INCREMENT:
-				nCap = decide(capacity + 1);
+				nCap = decide(m_capacity + 1);
 				break;
 			case ArrayExpandMethod::PLUS_HALF:
-				nCap = decide(capacity + (capacity / 2));
+				nCap = decide(m_capacity + (m_capacity / 2));
 				break;
 			case ArrayExpandMethod::DOUBLE:
-				nCap = decide(capacity * 2);
+				nCap = decide(m_capacity * 2);
 				break;
 			}
 
-			alloc.Allocate(nCap);
-			capacity = nCap;
+			alloc.allocate(nCap);
+			m_capacity = nCap;
 
-			for (SizeType i = 0; i < count; i++)
+			for (size_type i = 0; i < m_count; i++)
 			{
-				new(&alloc.Buffer[i]) T(std::move(temp[i]));
+				new(&alloc.m_buffer[i]) T(std::move(temp[i]));
 				temp[i].~T();
 			}
 
-			alloc.Deallocate(temp, oCap);
+			alloc.deallocate(temp, oCap);
 		}
 
 	public:
 
-		friend void NullifyArray(const DyArray& arr);
+		friend void nullify_array(const dynarr& arr);
 
-		ArrayExpandMethod ExpandMethod = ArrayExpandMethod::PLUS_HALF;
+		ArrayExpandMethod expand_method = ArrayExpandMethod::PLUS_HALF;
 
-		DyArray() = default;
+		dynarr() = default;
 
-		DyArray(SizeType cap)
-			: capacity(cap)
+		dynarr(size_type cap)
+			:m_capacity(cap)
 		{
-			alloc.Allocate(cap);
+			alloc.allocate(cap);
 		}
 
-		DyArray(std::initializer_list<T>&& inits)
-			: count(0), capacity(inits.size())
+		dynarr(std::initializer_list<T>&& inits)
+			:m_count(0), m_capacity(inits.size())
 		{
-			alloc.Allocate(capacity);
-			for (SizeType i = 0; i < capacity; i++)
+			alloc.allocate(m_capacity);
+			for (size_type i = 0; i < m_capacity; i++)
 			{
-				new(&alloc.Buffer[i]) T(std::move(*(inits.begin() + i)));
-				++count;
+				new(&alloc.m_buffer[i]) T(std::move(*(inits.begin() + i)));
+				++m_count;
 			}
 		}
 
-		DyArray(const DyArray& other)
-			: count(other.Size()), capacity(other.Capacity())
+		dynarr(const dynarr& other)
+			:m_count(other.size()), m_capacity(other.capacity())
 		{
-			alloc.Allocate(capacity);
+			alloc.allocate(m_capacity);
 
-			if (alloc.Buffer != nullptr)
+			if (alloc.m_buffer != nullptr)
 			{
-				for (SizeType i = 0; i < count; i++)
+				for (size_type i = 0; i < m_count; i++)
 				{
-					new(&alloc.Buffer[i]) T(other.Data()[i]);
+					new(&alloc.m_buffer[i]) T(other.data()[i]);
 				}
 			}
 		}
 
-		DyArray(DyArray&& other) noexcept
-			: count(other.Size()), capacity(other.Capacity())
+		dynarr(dynarr&& other) noexcept
+			:m_count(other.size()), m_capacity(other.capacity())
 		{
-			alloc.Buffer = other.Data();
+			alloc.m_buffer = other.data();
 			NullifyArray(other);
 		}
 
-		T& operator[](SizeType index)
+		T& operator[](size_type index)
 		{
-			return alloc.Buffer[index];
+			return alloc.m_buffer[index];
 		}
 
-		const T& operator[](SizeType index) const
+		const T& operator[](size_type index) const
 		{
-			return alloc.Buffer[index];
+			return alloc.m_buffer[index];
 		}
 
-		DyArray& operator=(const DyArray& other)
+		dynarr& operator=(const dynarr& other)
 		{
 			if (this != &other)
 			{
-				Clear();
-				alloc.Deallocate(capacity);
+				clear();
+				alloc.deallocate(m_capacity);
 
 
-				count = other.Size();
-				capacity = other.Capacity();
+				m_count = other.size();
+				m_capacity = other.capacity();
 
-				alloc.Allocate(capacity);
+				alloc.allocate(m_capacity);
 
-				if (alloc.Buffer != nullptr)
+				if (alloc.m_buffer != nullptr)
 				{
-					for (SizeType i = 0; i < count; i++)
+					for (size_type i = 0; i < m_count; i++)
 					{
-						new(&alloc.Buffer[i]) T(other.Data()[i]);
+						new(&alloc.m_buffer[i]) T(other.data()[i]);
 					}
 				}
 			}
@@ -253,17 +253,17 @@ namespace aggro
 			return *this;
 		}
 
-		DyArray& operator=(DyArray&& other) noexcept 
+		dynarr& operator=(dynarr&& other) noexcept 
 		{
 			if (this != &other)
 			{
-				Clear();
-				alloc.Deallocate(capacity);
+				clear();
+				alloc.deallocate(m_capacity);
 
-				count = other.Size();
-				capacity = other.Capacity();
+				m_count = other.size();
+				m_capacity = other.capacity();
 
-				alloc.Buffer = other.Data();
+				alloc.m_buffer = other.data();
 
 				NullifyArray(other);
 			}
@@ -271,140 +271,139 @@ namespace aggro
 			return *this;
 		}
 
-		DyArray& operator=(std::initializer_list<T>&& list)
+		dynarr& operator=(std::initializer_list<T>&& list)
 		{
-			Clear();
+			clear();
 			
-			if(list.size() > Capacity())
+			if(list.size() > capacity())
 			{
-				alloc.Deallocate(capacity);
-				capacity = list.size();
-				alloc.Allocate(capacity);
+				alloc.deallocate(m_capacity);
+				m_capacity = list.size();
+				alloc.allocate(m_capacity);
 			}
 
-			for (SizeType i = 0; i < capacity; i++)
+			for (size_type i = 0; i < m_capacity; i++)
 			{
-				new(&alloc.Buffer[i]) T(std::move(*(list.begin() + i)));
-				++count;
+				new(&alloc.m_buffer[i]) T(std::move(*(list.begin() + i)));
+				++m_count;
 			}
 
 			return *this;
 		}
 
-		~DyArray()
+		~dynarr()
 		{
-			Clear();
-			alloc.Deallocate(capacity);
-			capacity = 0;
+			clear();
+			alloc.deallocate(m_capacity);
+			m_capacity = 0;
 		}
 
-		std::optional<T> At(SizeType index)
+		std::optional<T> At(size_type index)
 		{
-			if (index < count)
-				return alloc.Buffer[index];
+			if (index < m_count)
+				return alloc.m_buffer[index];
 			else
 				return std::nullopt;
 		}
 
 		//Return the first element in the array.
-		T& First() const { return alloc.Buffer[0]; }
+		T& front() const { return alloc.m_buffer[0]; }
 
 		//Return the last element in the array.
-		T& Last() const { return alloc.Buffer[count - 1]; }
+		T& back() const { return alloc.m_buffer[m_count - 1]; }
 
 		//Number of elements contained.
-		SizeType Size() const
+		size_type size() const
 		{
-			return count;
+			return m_count;
 		}
 
 		//Number of elements able to be held.
-		SizeType Capacity() const
+		size_type capacity() const
 		{
-			return capacity;
+			return m_capacity;
 		}
 
 		//Total size in bytes
-		size_t Bytes() const
+		size_t bytes() const
 		{
-			return count * sizeof(T);
+			return m_count * sizeof(T);
 		}
 
 		//Return raw pointer to the array data.
-		const T* Data() const { return alloc.Buffer; }
-		T* Data() { return alloc.Buffer; }
+		const T* data() const { return alloc.m_buffer; }
+		T* data() { return alloc.m_buffer; }
 
-		ConstIterator begin() const { return alloc.Buffer; }
-		Iterator begin() { return alloc.Buffer; }
+		constiterator begin() const { return alloc.m_buffer; }
+		iterator begin() { return alloc.m_buffer; }
 
-		ConstIterator end() const { return alloc.Buffer + count; }
-		Iterator end() { return alloc.Buffer + count; }
+		constiterator end() const { return alloc.m_buffer + m_count; }
+		iterator end() { return alloc.m_buffer +m_count; }
 
-		RevIterator rbegin() { return alloc.Buffer + count; }
-		RevIterator rend() { return alloc.Buffer; }
+		reviterator rbegin() { return alloc.m_buffer + m_count; }
+		reviterator rend() { return alloc.m_buffer; }
 
-		ConstRevIterator rbegin() const { return alloc.Buffer + count; }
-		ConstRevIterator rend() const { return alloc.Buffer; }
+		constreviterator rbegin() const { return alloc.m_buffer + m_count; }
+		constreviterator rend() const { return alloc.m_buffer; }
 
 		//Is the array empty?
-		[[nodiscard("This function does not empty the array.")]] bool Empty() const { return begin() == end(); }
+		[[nodiscard("This function does not empty the array.")]] bool empty() const { return begin() == end(); }
 
 		//Reallocate enough memory for the provided number of elements.
-		void Reserve(SizeType cap)
+		void reserve(size_type cap)
 		{
-			T* temp = alloc.Buffer;
+			T* temp = alloc.m_buffer;
 
-			alloc.Allocate(cap);
+			alloc.allocate(cap);
 
-			for (SizeType i = 0; i < count; i++)
+			for (size_type i = 0; i < m_count; i++)
 			{
-				new(&alloc.Buffer[i]) T(std::move(temp[i]));
+				new(&alloc.m_buffer[i]) T(std::move(temp[i]));
 				temp[i].~T();
 			}
 
-			alloc.Deallocate(temp, capacity);
+			alloc.deallocate(temp, m_capacity);
 
-			capacity = cap;
+			m_capacity = cap;
 		}
 
 		//Store a copy of the provided object in the array.
-		//Similar to push_back.
-		void PushBack(const T& element)
+		void push_back(const T& element)
 		{
 			EmplaceBack(element);
 		}
 
-		//Move the provided object into the array. Similar to push_back.
-		void PushBack(T&& element)
+		//Move the provided object into the array.
+		void push_back(T&& element)
 		{
-			EmplaceBack(std::move(element));
+			emplace_back(std::move(element));
 		}
 
 		//Construct an object of type T directly into the array using the
-		//provided arguments. Similar to emplace_back.
+		//provided arguments.
 		template<typename... Args>
-		void EmplaceBack(Args&&... args)
+		void emplace_back(Args&&... args)
 		{
-			if (count >= capacity)
-				Grow();
+			if (m_count >=m_capacity)
+				grow();
 
-			new(&alloc.Buffer[count]) T(std::forward<Args>(args)...);
+			new(&alloc.m_buffer[m_count]) T(std::forward<Args>(args)...);
 
-			++count;
+			++m_count;
 		}
 
 		//Erase the last element. Similar to pop_back.
-		void PopBack()
+		void pop_back()
 		{
-			if (count > 0) --count;
+			if (m_count > 0) --m_count;
 			
-			alloc.Buffer[count].~T();
+			alloc.m_buffer[m_count].~T();
 		}
 
 		//Erase all elements from the starting point to the stopping point.
 		//If start is nullptr, this will start at the begining of the array.
 		//If stop is nullptr, this will stop at the end of the array.
-		void Erase(T* start, T* stop = nullptr)
+		void erase(T* start, T* stop = nullptr)
 		{
 			if(stop == nullptr) stop = end();
 			if (start == end()) return;
@@ -413,32 +412,32 @@ namespace aggro
 			while (start != stop)
 			{
 				start->~T();
-				count--;
+				m_count--;
 				start++;
 			}
 		}
 
-		//Clears the whole array and resets the push counter.
-		void Clear()
+		//clears the whole array and resets the pushm_counter.
+		void clear()
 		{
-			for (SizeType i = 0; i < count; i++)
-				alloc.Buffer[i].~T();
+			for (size_type i = 0; i < m_count; i++)
+				alloc.m_buffer[i].~T();
 
-			count = 0;
+			m_count = 0;
 		}
 	};
 
 	//Used for move operations.
 	template<typename T>
-	void NullifyArray(const DyArray<T>& arr)
+	void nullify_array(const dynarr<T>& arr)
 	{
 		arr.count = 0;
 		arr.capacity = 0;
-		arr.alloc.Buffer = nullptr;
+		arr.alloc.m_buffer = nullptr;
 	}
 
-	template<OStreamCompatible T, size_t N>
-	inline std::ostream& operator<<(std::ostream& stream, const StArray<T, N>& obj)
+	template<os_compatible T, size_t N>
+	inline std::ostream& operator<<(std::ostream& stream, const array<T, N>& obj)
 	{
 		stream << "{ ";
 
@@ -450,14 +449,14 @@ namespace aggro
 		return stream;
 	}
 
-	template<OStreamCompatible T>
-	inline std::ostream& operator<<(std::ostream& stream, const DyArray<T>& obj)
+	template<os_compatible T>
+	inline std::ostream& operator<<(std::ostream& stream, const dynarr<T>& obj)
 	{
 		stream << "{ ";
 
-		if(obj.Size() > 0)
+		if(obj.size() > 0)
 		{
-			auto size = obj.Size() - 1;
+			auto size = obj.size() - 1;
 
 			for(size_t ind = 0; ind < size; ++ind)
 				stream << obj[ind] << ", ";
