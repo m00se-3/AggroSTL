@@ -1,4 +1,4 @@
-#include "Arrays.hpp"
+#include "array.hpp"
 #include <iostream>
 #include <string>
 

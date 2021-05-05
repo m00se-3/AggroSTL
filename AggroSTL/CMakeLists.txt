@@ -1,10 +1,10 @@
 target_sources(
     aggrostl
     PUBLIC
-    ${CMAKE_CURRENT_LIST_DIR}/src/Arrays.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/concepts/AllocConcepts.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/concepts/StreamConcepts.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/allocators/STDAllocator.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/array.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/concepts/allocator.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/concepts/stream.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/allocators/standard.hpp
 )
 
 target_sources(

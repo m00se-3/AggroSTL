@@ -1,8 +1,8 @@
 #include <utility>
 #include <initializer_list>
 #include <optional>
-#include "concepts/StreamConcepts.hpp"
-#include "allocators/STDAllocator.hpp"
+#include "concepts/stream.hpp"
+#include "allocators/standard.hpp"
 
 namespace aggro
 {
