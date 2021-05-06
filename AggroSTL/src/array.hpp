@@ -22,6 +22,7 @@ namespace aggro
 	public:
 		using value_type = T;
 		using size_type = std::size_t;
+		using difference_type = sizeof(T);
 
 		using reference = T&;
 		using const_reference = const T&;
@@ -126,8 +127,9 @@ namespace aggro
 	{
 	public:
 		using size_type = std::size_t;
-
 		using value_type = T;
+		using difference_type = sizeof(T);
+
 		using reference = T&;
 		using const_reference = const T&;
 		using pointer = T*;
