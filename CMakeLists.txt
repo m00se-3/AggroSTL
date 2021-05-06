@@ -22,7 +22,7 @@ set_target_properties(aggrostl PROPERTIES LINKER_LANGUAGE CXX)
 
 target_compile_features(arrays PRIVATE cxx_std_20)
 target_compile_options(arrays PRIVATE ${flags})
-target_include_directories(arrays PRIVATE ${CMAKE_CURRENT_LIST_DIR}/AggroSTL/src/)
+target_include_directories(arrays PRIVATE ${CMAKE_CURRENT_LIST_DIR}/AggroSTL/aggro/)
 target_link_libraries(arrays PRIVATE aggrostl)
 
 add_test(NAME arraytest COMMAND arrays)
