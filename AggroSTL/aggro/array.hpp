@@ -383,7 +383,7 @@ namespace aggro
 		//Store a copy of the provided object in the array.
 		constexpr void push_back(const T& element)
 		{
-			EmplaceBack(element);
+			emplace_back(element);
 		}
 
 		//Move the provided object into the array.
