@@ -13,7 +13,7 @@ namespace aggro
         constexpr nullopt_t() {}
     };
 
-    using nullopt = nullopt_t;
+    inline constexpr nullopt_t nullopt{};
 
     /*
         A class that represents a value that may not exist.
@@ -33,7 +33,7 @@ namespace aggro
         constexpr optional() = default;
         constexpr ~optional() = default;
 
-        constexpr optional(const nullopt_t& n) {}
+        constexpr optional(const nullopt_t&) {}
         constexpr optional(const optional& other) 
         {
             if(other)
