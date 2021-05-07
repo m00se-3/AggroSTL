@@ -6,6 +6,9 @@
 namespace aggro
 {
     template<typename T>
+    concept pointer = std::is_pointer_v<T>;
+    
+    template<typename T>
     concept destructible = std::destructible<T>;
 
     template<typename T, typename U>

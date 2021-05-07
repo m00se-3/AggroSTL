@@ -2,13 +2,10 @@
 #define ALLOCCONCEPTS_HPP
 
 #include <concepts>
-#include <type_traits>
+#include "objects.hpp"
 
 namespace aggro
 {
-    template<typename T>
-    concept pointer = std::is_pointer_v<T>;
-
     template<typename T>
     concept pointer_to_buffer = pointer<T> && std::is_array_v<T>;
 
