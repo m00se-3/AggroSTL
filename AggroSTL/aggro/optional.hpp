@@ -13,6 +13,8 @@ namespace aggro
         constexpr nullopt_t() {}
     };
 
+    using nullopt = nullopt_t;
+
     /*
         A class that represents a value that may not exist.
         Used for returning from operations that may fail.
@@ -73,12 +75,14 @@ namespace aggro
         template<destructible U = value_type>
         constexpr optional(U&& v) : val(v), value_set(true) {}
 
-        constexpr operator=(const optional& other)
+        constexpr optional& operator=(const optional& other)
         {
             if(other)
             {
-                emplace(other.value())
+                emplace(other.value());
             }
+
+            return *this;
         }
 
         constexpr T* operator->() { return &val; }
@@ -89,7 +93,7 @@ namespace aggro
 
         constexpr const T& operator*() const { return val; }
 
-        constexpr bool operator bool() const { return value_set; }
+        constexpr explicit operator bool() const { return value_set; }
 
         constexpr T& value() { return val; }
 
@@ -117,6 +121,72 @@ namespace aggro
             return val;
         }
     };
+
+    template<typename T, typename U> requires fully_comparable<T, U>
+    inline bool operator==(const optional<T>& lhs, const optional<U>& rhs)
+    {
+        if(lhs && rhs)
+        {
+            return (lhs.value() == rhs.value());
+        }
+
+        return false;
+    }
+
+    template<typename T, typename U> requires fully_comparable<T, U>
+    inline bool operator!=(const optional<T>& lhs, const optional<U>& rhs)
+    {
+        if(lhs && rhs)
+        {
+            return (lhs.value() != rhs.value());
+        }
+
+        return false;
+    }
+
+    template<typename T, typename U> requires fully_comparable<T, U>
+    inline bool operator>=(const optional<T>& lhs, const optional<U>& rhs)
+    {
+        if(lhs && rhs)
+        {
+            return (lhs.value() >= rhs.value());
+        }
+
+        return false;
+    }
+
+    template<typename T, typename U> requires fully_comparable<T, U>
+    inline bool operator<=(const optional<T>& lhs, const optional<U>& rhs)
+    {
+        if(lhs && rhs)
+        {
+            return (lhs.value() <= rhs.value());
+        }
+
+        return false;
+    }
+
+    template<typename T, typename U> requires fully_comparable<T, U>
+    inline bool operator>(const optional<T>& lhs, const optional<U>& rhs)
+    {
+        if(lhs && rhs)
+        {
+            return (lhs.value() > rhs.value());
+        }
+
+        return false;
+    }
+
+    template<typename T, typename U> requires fully_comparable<T, U>
+    inline bool operator<(const optional<T>& lhs, const optional<U>& rhs)
+    {
+        if(lhs && rhs)
+        {
+            return (lhs.value() < rhs.value());
+        }
+
+        return false;
+    }
 
 } // namespace aggro
 

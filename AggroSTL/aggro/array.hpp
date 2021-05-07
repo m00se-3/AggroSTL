@@ -1,6 +1,6 @@
 #include <utility>
 #include <initializer_list>
-#include <optional>
+#include "optional.hpp"
 #include "concepts/stream.hpp"
 #include "allocators/standard.hpp"
 
@@ -22,7 +22,6 @@ namespace aggro
 	public:
 		using value_type = T;
 		using size_type = std::size_t;
-		using difference_type = sizeof(T);
 
 		using reference = T&;
 		using const_reference = const T&;
@@ -93,12 +92,12 @@ namespace aggro
 
 		constexpr T* data() { return m_data; }
 
-		constexpr std::optional<T> at(size_type index)
+		constexpr aggro::optional<T> at(size_type index)
 		{
 			if (index < N)
 				return m_data[index];
 			else
-				return std::nullopt;
+				return aggro::nullopt;
 		}
 
 		constexpr [[nodiscard("This function does not empty the array.")]] bool empty() const { return begin() == end(); }
@@ -128,7 +127,6 @@ namespace aggro
 	public:
 		using size_type = std::size_t;
 		using value_type = T;
-		using difference_type = sizeof(T);
 
 		using reference = T&;
 		using const_reference = const T&;
@@ -311,12 +309,12 @@ namespace aggro
 			m_capacity = 0;
 		}
 
-		constexpr std::optional<T> at(size_type index)
+		constexpr aggro::optional<T> at(size_type index)
 		{
 			if (index < m_count)
 				return alloc.m_buffer[index];
 			else
-				return std::nullopt;
+				return aggro::nullopt;
 		}
 
 		//Return the first element in the array.

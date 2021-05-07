@@ -9,7 +9,7 @@ namespace aggro
     concept destructible = std::destructible<T>;
 
     template<typename T, typename U>
-    concept fully_comparble = requires(T t, U u)
+    concept fully_comparable = requires(T t, U u)
     {
         { t == u } -> std::same_as<bool>;
         { t != u } -> std::same_as<bool>;
