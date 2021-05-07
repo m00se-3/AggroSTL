@@ -11,6 +11,9 @@ namespace aggro
     template<typename T>
     concept destructible = std::destructible<T>;
 
+    template<typename T>
+    concept default_constructible = std::is_default_constructible_v<T>;
+
     template<typename T, typename U>
     concept fully_comparable = requires(T t, U u)
     {
