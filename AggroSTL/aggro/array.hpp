@@ -246,7 +246,7 @@ namespace aggro
 			if (this != &other)
 			{
 				clear();
-				alloc.deallocate(m_capacity);
+				alloc.deallocate(alloc.m_buffer, m_capacity);
 
 
 				m_count = other.size();
@@ -271,7 +271,7 @@ namespace aggro
 			if (this != &other)
 			{
 				clear();
-				alloc.deallocate(m_capacity);
+				alloc.deallocate(alloc.m_buffer, m_capacity);
 
 				m_count = other.size();
 				m_capacity = other.capacity();
@@ -290,7 +290,7 @@ namespace aggro
 			
 			if(list.size() > capacity())
 			{
-				alloc.deallocate(m_capacity);
+				alloc.deallocate(alloc.m_buffer, m_capacity);
 				m_capacity = list.size();
 				alloc.allocate(m_capacity);
 			}
@@ -307,7 +307,7 @@ namespace aggro
 		constexpr ~dynarr()
 		{
 			clear();
-			alloc.deallocate(m_capacity);
+			alloc.deallocate(alloc.m_buffer, m_capacity);
 			m_capacity = 0;
 		}
 

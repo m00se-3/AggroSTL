@@ -6,7 +6,7 @@
 namespace aggro
 {
     template<typename T> requires (pointer<T> == false)
-    inline constexpr T&& move(const T& t) noexcept
+    inline constexpr T&& move(T&& t) noexcept
     {
         return static_cast<T&&>(t);
     }
@@ -34,7 +34,7 @@ namespace aggro
     template<default_constructible T, default_constructible U>
     inline constexpr pair<T,U> make_pair(T&& t, U&& u)
     {
-        return pair(move(t), (move(u));
+        return pair(move(t), move(u));
     }
 
 } // namespace aggro

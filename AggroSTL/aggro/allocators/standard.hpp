@@ -9,16 +9,12 @@ namespace aggro
     struct std_allocator
     {
         using size_type = std::size_t;
+
         T* m_buffer = nullptr;
 
         void allocate(size_type amount)
         {
             m_buffer = static_cast<T*>(::operator new(amount * sizeof(T)));
-        }
-
-        void deallocate(size_type amount)
-        {
-            ::operator delete(m_buffer, amount * sizeof(T));
         }
 
         void deallocate(T* start, size_type amount)
