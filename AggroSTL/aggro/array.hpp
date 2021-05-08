@@ -147,6 +147,12 @@ namespace aggro
 		size_type m_count {};
 		size_type m_capacity {};
 
+		template<typename... Args>
+		constexpr void _emplace(T* spot, Args&&... args)
+		{
+			new(spot) T(std::forward<Args>(args)...);
+		}
+
 		constexpr void grow()
 		{
 			T* temp = alloc.m_buffer;
@@ -178,7 +184,7 @@ namespace aggro
 
 			for (size_type i = 0; i < m_count; i++)
 			{
-				new(&alloc.m_buffer[i]) T(move(temp[i]));
+				_emplace(&alloc.m_buffer[i], move(temp[i]));
 				temp[i].~T();
 			}
 
@@ -205,7 +211,7 @@ namespace aggro
 			alloc.allocate(m_capacity);
 			for (size_type i = 0; i < m_capacity; i++)
 			{
-				new(&alloc.m_buffer[i]) T(move(*(inits.begin() + i)));
+				_emplace(&alloc.m_buffer[i], move(*(inits.begin() + i)));
 				++m_count;
 			}
 		}
@@ -219,7 +225,7 @@ namespace aggro
 			{
 				for (size_type i = 0; i < m_count; i++)
 				{
-					new(&alloc.m_buffer[i]) T(other.data()[i]);
+					_emplace(&alloc.m_buffer[i], other.data()[i]);
 				}
 			}
 		}
@@ -258,7 +264,7 @@ namespace aggro
 				{
 					for (size_type i = 0; i < m_count; i++)
 					{
-						new(&alloc.m_buffer[i]) T(other.data()[i]);
+						_emplace(&alloc.m_buffer[i], other.data()[i]);
 					}
 				}
 			}
@@ -297,7 +303,7 @@ namespace aggro
 
 			for (size_type i = 0; i < m_capacity; i++)
 			{
-				new(&alloc.m_buffer[i]) T(move(*(list.begin() + i)));
+				_emplace(&alloc.m_buffer[i], move(*(list.begin() + i)));
 				++m_count;
 			}
 
@@ -371,7 +377,7 @@ namespace aggro
 
 			for (size_type i = 0; i < m_count; i++)
 			{
-				new(&alloc.m_buffer[i]) T(move(temp[i]));
+				_emplace(&alloc.m_buffer[i], move(temp[i]));
 				temp[i].~T();
 			}
 
@@ -400,7 +406,7 @@ namespace aggro
 			if (m_count >=m_capacity)
 				grow();
 
-			new(&alloc.m_buffer[m_count]) T(std::forward<Args>(args)...);
+			_emplace(&alloc.m_buffer[m_count], std::forward<Args>(args)...);
 
 			++m_count;
 		}
