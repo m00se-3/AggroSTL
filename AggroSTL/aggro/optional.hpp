@@ -104,7 +104,7 @@ namespace aggro
 
         constexpr bool has_value() const { return value_set; }
 
-        constexpr void reset() const
+        constexpr void reset()
         {
             value_set = false;
             val.~T();
