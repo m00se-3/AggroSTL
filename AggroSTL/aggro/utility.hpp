@@ -11,6 +11,9 @@ namespace aggro
         return static_cast<T&&>(t);
     }
 
+    /*
+        A very generic structure holding a pair of values.
+    */
     template<default_constructible T, default_constructible U>
     struct pair
     {

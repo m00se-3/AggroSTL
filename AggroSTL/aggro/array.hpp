@@ -1,5 +1,5 @@
-#include <utility>
 #include <initializer_list>
+#include "utility.hpp"
 #include "optional.hpp"
 #include "concepts/stream.hpp"
 #include "allocators/standard.hpp"
@@ -22,6 +22,7 @@ namespace aggro
 	public:
 		using value_type = T;
 		using size_type = std::size_t;
+		using difference_type = std::ptrdiff_t;
 
 		using reference = T&;
 		using const_reference = const T&;
@@ -49,7 +50,7 @@ namespace aggro
 		constexpr array(std::initializer_list<T>&& inits)
 		{
 			for (size_type n = 0; n < size(); n++)
-				new(&m_data[n]) T(std::move(*(inits.begin() + n)));
+				new(&m_data[n]) T(move(*(inits.begin() + n)));
 		}
 		constexpr ~array() = default;
 
@@ -72,7 +73,7 @@ namespace aggro
 		constexpr array& operator=(std::initializer_list<T>&& inits)
 		{
 			for (size_type n = 0; n < size(); n++)
-				new(&m_data[n]) T(std::move(*(inits.begin() + n)));
+				new(&m_data[n]) T(move(*(inits.begin() + n)));
 
 			return *this;
 		}
@@ -127,6 +128,7 @@ namespace aggro
 	public:
 		using size_type = std::size_t;
 		using value_type = T;
+		using difference_type = std::ptrdiff_t;
 
 		using reference = T&;
 		using const_reference = const T&;
@@ -176,7 +178,7 @@ namespace aggro
 
 			for (size_type i = 0; i < m_count; i++)
 			{
-				new(&alloc.m_buffer[i]) T(std::move(temp[i]));
+				new(&alloc.m_buffer[i]) T(move(temp[i]));
 				temp[i].~T();
 			}
 
@@ -203,7 +205,7 @@ namespace aggro
 			alloc.allocate(m_capacity);
 			for (size_type i = 0; i < m_capacity; i++)
 			{
-				new(&alloc.m_buffer[i]) T(std::move(*(inits.begin() + i)));
+				new(&alloc.m_buffer[i]) T(move(*(inits.begin() + i)));
 				++m_count;
 			}
 		}
@@ -226,7 +228,7 @@ namespace aggro
 			:m_count(other.size()), m_capacity(other.capacity())
 		{
 			alloc.m_buffer = other.data();
-			NullifyArray(other);
+			nullify_array(other);
 		}
 
 		constexpr T& operator[](size_type index)
@@ -276,7 +278,7 @@ namespace aggro
 
 				alloc.m_buffer = other.data();
 
-				NullifyArray(other);
+				nullify_array(other);
 			}
 
 			return *this;
@@ -295,7 +297,7 @@ namespace aggro
 
 			for (size_type i = 0; i < m_capacity; i++)
 			{
-				new(&alloc.m_buffer[i]) T(std::move(*(list.begin() + i)));
+				new(&alloc.m_buffer[i]) T(move(*(list.begin() + i)));
 				++m_count;
 			}
 
@@ -369,7 +371,7 @@ namespace aggro
 
 			for (size_type i = 0; i < m_count; i++)
 			{
-				new(&alloc.m_buffer[i]) T(std::move(temp[i]));
+				new(&alloc.m_buffer[i]) T(move(temp[i]));
 				temp[i].~T();
 			}
 
@@ -387,7 +389,7 @@ namespace aggro
 		//Move the provided object into the array.
 		constexpr void push_back(T&& element)
 		{
-			emplace_back(std::move(element));
+			emplace_back(move(element));
 		}
 
 		//Construct an object of type T directly into the array using the

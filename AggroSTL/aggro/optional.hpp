@@ -2,7 +2,6 @@
 #define OPTIONAL_HPP
 
 #include "concepts/objects.hpp"
-#include <utility>
 
 namespace aggro
 {
