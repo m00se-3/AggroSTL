@@ -101,7 +101,7 @@ namespace aggro
 				return aggro::nullopt;
 		}
 
-		constexpr [[nodiscard("This function does not empty the array.")]] bool empty() const { return begin() == end(); }
+		[[nodiscard("This function does not empty the array.")]] constexpr bool empty() const { return begin() == end(); }
 
 		constexpr iterator begin() { return m_data; }
 		constexpr iterator end() { return m_data + N; }
@@ -366,7 +366,7 @@ namespace aggro
 		constexpr const_reverse_iterator rend() const { return alloc.m_buffer; }
 
 		//Is the array empty?
-		constexpr [[nodiscard("This function does not empty the array.")]] bool empty() const { return begin() == end(); }
+		[[nodiscard("This function does not empty the array.")]] constexpr bool empty() const { return begin() == end(); }
 
 		//Reallocate enough memory for the provided number of elements.
 		constexpr void reserve(size_type cap)
