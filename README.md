@@ -6,8 +6,8 @@ A C++20 template library which provides an alternative to the Standard Template 
 
 ## Dependence on the STL  
 
-Currently the AggroSTL relies on some parts of the STL for building its API, namely the Concepts library and some parts of the Utility library.  
-These dependencies will be gradually replaced with our own code as the AggroSTL matures and develops.  
+Currently the AggroSTL relies on some parts of the STL for building its API, namely the Concepts library and some parts of the Utility library.
+ These dependencies will be gradually replaced with our own code as the AggroSTL matures and develops.  
 
 That being said, the AggroSTL trys to emulate the STL's API where it can for easy migration and compatibility with existing algorithms.  
 
