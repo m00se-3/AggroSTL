@@ -15,6 +15,10 @@ namespace aggro
 
         resource res() { return m_buffer; }
 
+        const resource res() const { return m_buffer; }
+
+        void set_res(resource other) { m_buffer = other; }
+
         void allocate(size_type amount)
         {
             m_buffer = static_cast<T*>(::operator new(amount * sizeof(T)));
