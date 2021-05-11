@@ -14,3 +14,8 @@ That being said, the AggroSTL trys to emulate the STL's API where it can for eas
 ## Why Call it AggroSTL?  
 
 Because "aggro" is part of my gamer tag. With this being a game development focused library, I thought it was fitting.  
+
+## Header Only  
+
+With this library being primarily template-based, it only contains ".hpp" files with some test programs. You only need to **#include** the library  
+files into your project.  
