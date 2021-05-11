@@ -18,7 +18,7 @@ namespace aggro
     struct pair
     {
         T first;
-        T second;
+        U second;
 
         constexpr pair() = default;
         constexpr ~pair() = default;
