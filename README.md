@@ -1,8 +1,8 @@
 # AggroSTL
 
-A C++20 template library which provides an alternative to the Standard Template Library. This library does not replace the STL, but provides 
-an optimized utility for writing memory efficient and safe code. This library takes advangate of C++20 Concepts in order to provide 
-a clean template API that is easy to debug.  
+A C++20 template library which provides an alternative to the Standard Template Library. This library does not replace the STL, but provides
+ an optimized utility for writing memory efficient and safe code. This library takes advangate of C++20 Concepts in order to provide
+ a clean template API that is easy to debug.  
 
 ## Dependence on the STL  
 
