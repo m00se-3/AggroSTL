@@ -9,8 +9,11 @@ namespace aggro
     struct std_allocator
     {
         using size_type = std::size_t;
+        using resource = T*;
 
-        T* m_buffer = nullptr;
+        resource m_buffer = nullptr;
+
+        resource res() { return m_buffer; }
 
         void allocate(size_type amount)
         {
