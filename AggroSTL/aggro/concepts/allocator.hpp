@@ -1,7 +1,6 @@
 #ifndef ALLOCCONCEPTS_HPP
 #define ALLOCCONCEPTS_HPP
 
-#include <concepts>
 #include "objects.hpp"
 
 namespace aggro
