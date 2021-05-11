@@ -155,7 +155,7 @@ namespace aggro
 
 		constexpr void grow()
 		{
-			T* temp = alloc.m_buffer;
+			T* temp = alloc.res();
 			size_type nCap;
 			size_type oCap = m_capacity;
 
@@ -184,7 +184,7 @@ namespace aggro
 
 			for (size_type i = 0; i < m_count; i++)
 			{
-				_emplace(&alloc.m_buffer[i], move(temp[i]));
+				_emplace(&alloc.res()[i], move(temp[i]));
 				temp[i].~T();
 			}
 
@@ -211,7 +211,7 @@ namespace aggro
 			alloc.allocate(m_capacity);
 			for (size_type i = 0; i < m_capacity; i++)
 			{
-				_emplace(&alloc.m_buffer[i], move(*(inits.begin() + i)));
+				_emplace(&alloc.res()[i], move(*(inits.begin() + i)));
 				++m_count;
 			}
 		}
@@ -221,11 +221,11 @@ namespace aggro
 		{
 			alloc.allocate(m_capacity);
 
-			if (alloc.m_buffer != nullptr)
+			if (alloc.res() != nullptr)
 			{
 				for (size_type i = 0; i < m_count; i++)
 				{
-					_emplace(&alloc.m_buffer[i], other.data()[i]);
+					_emplace(&alloc.res()[i], other.data()[i]);
 				}
 			}
 		}
@@ -233,18 +233,18 @@ namespace aggro
 		constexpr dynarr(dynarr&& other) noexcept
 			:m_count(other.size()), m_capacity(other.capacity())
 		{
-			alloc.m_buffer = other.data();
+			alloc.set_res(other.data());
 			nullify_array(other);
 		}
 
 		constexpr T& operator[](size_type index)
 		{
-			return alloc.m_buffer[index];
+			return alloc.res()[index];
 		}
 
 		constexpr const T& operator[](size_type index) const
 		{
-			return alloc.m_buffer[index];
+			return alloc.res()[index];
 		}
 
 		constexpr dynarr& operator=(const dynarr& other)
@@ -252,7 +252,7 @@ namespace aggro
 			if (this != &other)
 			{
 				clear();
-				alloc.deallocate(alloc.m_buffer, m_capacity);
+				alloc.deallocate(alloc.res(), m_capacity);
 
 
 				m_count = other.size();
@@ -260,11 +260,11 @@ namespace aggro
 
 				alloc.allocate(m_capacity);
 
-				if (alloc.m_buffer != nullptr)
+				if (alloc.res() != nullptr)
 				{
 					for (size_type i = 0; i < m_count; i++)
 					{
-						_emplace(&alloc.m_buffer[i], other.data()[i]);
+						_emplace(&alloc.res()[i], other.data()[i]);
 					}
 				}
 			}
@@ -277,12 +277,12 @@ namespace aggro
 			if (this != &other)
 			{
 				clear();
-				alloc.deallocate(alloc.m_buffer, m_capacity);
+				alloc.deallocate(alloc.res(), m_capacity);
 
 				m_count = other.size();
 				m_capacity = other.capacity();
 
-				alloc.m_buffer = other.data();
+				alloc.set_res(other.data());
 
 				nullify_array(other);
 			}
@@ -296,14 +296,14 @@ namespace aggro
 			
 			if(list.size() > capacity())
 			{
-				alloc.deallocate(alloc.m_buffer, m_capacity);
+				alloc.deallocate(alloc.res(), m_capacity);
 				m_capacity = list.size();
 				alloc.allocate(m_capacity);
 			}
 
 			for (size_type i = 0; i < m_capacity; i++)
 			{
-				_emplace(&alloc.m_buffer[i], move(*(list.begin() + i)));
+				_emplace(&alloc.res()[i], move(*(list.begin() + i)));
 				++m_count;
 			}
 
@@ -313,23 +313,23 @@ namespace aggro
 		constexpr ~dynarr()
 		{
 			clear();
-			alloc.deallocate(alloc.m_buffer, m_capacity);
+			alloc.deallocate(alloc.res(), m_capacity);
 			m_capacity = 0;
 		}
 
 		constexpr aggro::optional<T> at(size_type index)
 		{
 			if (index < m_count)
-				return alloc.m_buffer[index];
+				return alloc.res()[index];
 			else
 				return aggro::nullopt;
 		}
 
 		//Return the first element in the array.
-		constexpr T& front() const { return alloc.m_buffer[0]; }
+		constexpr T& front() const { return alloc.res()[0]; }
 
 		//Return the last element in the array.
-		constexpr T& back() const { return alloc.m_buffer[m_count - 1]; }
+		constexpr T& back() const { return alloc.res()[m_count - 1]; }
 
 		//Number of elements contained.
 		constexpr size_type size() const
@@ -350,20 +350,20 @@ namespace aggro
 		}
 
 		//Return raw pointer to the array data.
-		constexpr const T* data() const { return alloc.m_buffer; }
-		constexpr T* data() { return alloc.m_buffer; }
+		constexpr const T* data() const { return alloc.res(); }
+		constexpr T* data() { return alloc.res(); }
 
-		constexpr const_iterator begin() const { return alloc.m_buffer; }
-		constexpr iterator begin() { return alloc.m_buffer; }
+		constexpr const_iterator begin() const { return alloc.res(); }
+		constexpr iterator begin() { return alloc.res(); }
 
-		constexpr const_iterator end() const { return alloc.m_buffer + m_count; }
-		constexpr iterator end() { return alloc.m_buffer +m_count; }
+		constexpr const_iterator end() const { return alloc.res() + m_count; }
+		constexpr iterator end() { return alloc.res() +m_count; }
 
-		constexpr reverse_iterator rbegin() { return alloc.m_buffer + m_count; }
-		constexpr reverse_iterator rend() { return alloc.m_buffer; }
+		constexpr reverse_iterator rbegin() { return alloc.res() + m_count; }
+		constexpr reverse_iterator rend() { return alloc.res(); }
 
-		constexpr const_reverse_iterator rbegin() const { return alloc.m_buffer + m_count; }
-		constexpr const_reverse_iterator rend() const { return alloc.m_buffer; }
+		constexpr const_reverse_iterator rbegin() const { return alloc.res() + m_count; }
+		constexpr const_reverse_iterator rend() const { return alloc.res(); }
 
 		//Is the array empty?
 		[[nodiscard("This function does not empty the array.")]] constexpr bool empty() const { return begin() == end(); }
@@ -371,13 +371,13 @@ namespace aggro
 		//Reallocate enough memory for the provided number of elements.
 		constexpr void reserve(size_type cap)
 		{
-			T* temp = alloc.m_buffer;
+			T* temp = alloc.res();
 
 			alloc.allocate(cap);
 
 			for (size_type i = 0; i < m_count; i++)
 			{
-				_emplace(&alloc.m_buffer[i], move(temp[i]));
+				_emplace(&alloc.res()[i], move(temp[i]));
 				temp[i].~T();
 			}
 
@@ -406,7 +406,7 @@ namespace aggro
 			if (m_count >=m_capacity)
 				grow();
 
-			_emplace(&alloc.m_buffer[m_count], std::forward<Args>(args)...);
+			_emplace(&alloc.res()[m_count], std::forward<Args>(args)...);
 
 			++m_count;
 		}
@@ -416,7 +416,7 @@ namespace aggro
 		{
 			if (m_count > 0) --m_count;
 			
-			alloc.m_buffer[m_count].~T();
+			alloc.res()[m_count].~T();
 		}
 
 		//Erase all elements from the starting point to the stopping point.
@@ -440,7 +440,7 @@ namespace aggro
 		constexpr void clear()
 		{
 			for (size_type i = 0; i < m_count; i++)
-				alloc.m_buffer[i].~T();
+				alloc.res()[i].~T();
 
 			m_count = 0;
 		}
@@ -452,7 +452,7 @@ namespace aggro
 	{
 		arr.count = 0;
 		arr.capacity = 0;
-		arr.alloc.m_buffer = nullptr;
+		arr.alloc.set_res(nullptr);
 	}
 
 	template<os_compatible T, size_t N>
