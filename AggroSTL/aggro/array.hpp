@@ -157,7 +157,6 @@ namespace aggro
 		{
 			T* temp = alloc.res();
 			size_type nCap;
-			size_type oCap = m_capacity;
 
 			auto decide = [](size_type test) -> size_type {
 				if (test > 0)
@@ -188,7 +187,7 @@ namespace aggro
 				temp[i].~T();
 			}
 
-			alloc.deallocate(temp, oCap);
+			alloc.deallocate(temp);
 		}
 
 	public:
@@ -252,7 +251,7 @@ namespace aggro
 			if (this != &other)
 			{
 				clear();
-				alloc.deallocate(alloc.res(), m_capacity);
+				alloc.deallocate(alloc.res());
 
 
 				m_count = other.size();
@@ -277,7 +276,7 @@ namespace aggro
 			if (this != &other)
 			{
 				clear();
-				alloc.deallocate(alloc.res(), m_capacity);
+				alloc.deallocate(alloc.res());
 
 				m_count = other.size();
 				m_capacity = other.capacity();
@@ -296,7 +295,7 @@ namespace aggro
 			
 			if(list.size() > capacity())
 			{
-				alloc.deallocate(alloc.res(), m_capacity);
+				alloc.deallocate(alloc.res());
 				m_capacity = list.size();
 				alloc.allocate(m_capacity);
 			}
@@ -313,7 +312,7 @@ namespace aggro
 		constexpr ~dynarr()
 		{
 			clear();
-			alloc.deallocate(alloc.res(), m_capacity);
+			alloc.deallocate(alloc.res());
 			m_capacity = 0;
 		}
 
@@ -381,7 +380,7 @@ namespace aggro
 				temp[i].~T();
 			}
 
-			alloc.deallocate(temp, m_capacity);
+			alloc.deallocate(temp);
 
 			m_capacity = cap;
 		}

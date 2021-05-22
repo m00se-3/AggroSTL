@@ -21,12 +21,12 @@ namespace aggro
 
         void allocate(size_type amount)
         {
-            m_buffer = static_cast<T*>(::operator new(amount * sizeof(T)));
+            m_buffer = static_cast<resource>(malloc(amount * sizeof(T)));
         }
 
-        void deallocate(T* start, size_type amount)
+        void deallocate(resource start)
         {
-            ::operator delete(start, amount * sizeof(T));
+            free(start);
         }
     };
 
