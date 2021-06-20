@@ -29,8 +29,8 @@ namespace aggro
         bool value_set = false;
 
     public:
-        constexpr optional() = default;
-        constexpr ~optional() = default;
+        constexpr optional() : val(value_type{}) {}
+        constexpr ~optional() { val.~T(); }
 
         constexpr optional(const nullopt_t&) {}
         constexpr optional(const optional& other) 
@@ -115,7 +115,7 @@ namespace aggro
         {
             if(value_set) reset();
 
-            new(&val) T(args...);
+            new(&val) T(std::forward<Args&&>(args)...);
 
             return val;
         }
