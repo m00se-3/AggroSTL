@@ -1,7 +1,7 @@
 #ifndef STREAMCONCEPTS_HPP
 #define STREAMCONCEPTS_HPP
 
-#include <concepts>
+#include "objects.hpp"
 #include <ostream>
 
 namespace aggro
@@ -12,7 +12,7 @@ namespace aggro
 	*/
 	template<typename T> concept os_compatible = requires (std::ostream os, T type)
 	{
-		{ os << type } -> std::same_as<std::ostream&>;
+		{ os << type } -> same<std::ostream&>;
 	};
 
     /*
@@ -21,7 +21,7 @@ namespace aggro
 	*/
 	template<typename T> concept is_compatible = requires (std::istream is, T type)
 	{
-		{ is << type } -> std::same_as<std::istream&>;
+		{ is << type } -> same<std::istream&>;
 	};
 
 	/*

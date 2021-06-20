@@ -10,7 +10,7 @@ namespace aggro
     {
         typename T::resource;
         { type.allocate(size) };
-        { type.deallocate(type.res(), size) };
+        { type.deallocate(type.res()) };
     };
     
     template<typename T>
