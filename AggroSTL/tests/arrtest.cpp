@@ -12,6 +12,7 @@ int main()
     other = is;
     
     fs = { "Hello", "World" };
+    fs.emplace_back("Escamo!!");
 
     std::cout << is << '\n';
     std::cout << other << '\n';
