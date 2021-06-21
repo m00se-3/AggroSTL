@@ -9,24 +9,26 @@ namespace aggro
     struct std_allocator
     {
         using size_type = std::size_t;
-        using resource = T*;
+        using memory_resource = T*;
 
-        resource m_buffer = nullptr;
+        memory_resource m_buffer = nullptr;
 
-        resource res() { return m_buffer; }
+        memory_resource resource() { return m_buffer; }
 
-        const resource res() const { return m_buffer; }
+        const memory_resource resource() const { return m_buffer; }
 
-        void set_res(resource other) { m_buffer = other; }
+        void set_res(memory_resource other) { m_buffer = other; }
 
-        void allocate(size_type amount)
+        memory_resource allocate(size_type amount)
         {
-            m_buffer = static_cast<resource>(malloc(amount * sizeof(T)));
+            m_buffer = static_cast<memory_resource>(::operator new[](amount * sizeof(T)));
+
+            return m_buffer;
         }
 
-        void deallocate(resource start)
+        void deallocate(memory_resource start, size_type size)
         {
-            free(start);
+            ::operator delete[](start, size * sizeof(T));
         }
     };
 
