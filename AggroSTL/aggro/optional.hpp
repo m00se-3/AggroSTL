@@ -29,8 +29,16 @@ namespace aggro
         bool value_set = false;
 
     public:
-        constexpr optional() : val(value_type{}) {}
-        constexpr ~optional() { val.~T(); }
+        constexpr optional() = default;
+        constexpr ~optional() = default;
+
+        constexpr optional(const T& value)
+        : val(value), value_set(true)
+        {}
+
+        constexpr optional(T&& value)
+        : val(move(value)), value_set(true)
+        {}
 
         constexpr optional(const nullopt_t&) {}
         constexpr optional(const optional& other) 
