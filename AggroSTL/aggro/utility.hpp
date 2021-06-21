@@ -5,8 +5,16 @@
 
 namespace aggro
 {
+    //Returns an rvalue reference of the provided value.
     template<typename T> requires (pointer<T> == false)
     inline constexpr T&& move(T&& t) noexcept
+    {
+        return static_cast<T&&>(t);
+    }
+
+    //Returns a forwarding reference of the provided value.
+    template<typename T>
+    inline constexpr T&& forward(T&& t) noexcept
     {
         return static_cast<T&&>(t);
     }
