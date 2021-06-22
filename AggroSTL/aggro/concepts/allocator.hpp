@@ -11,6 +11,7 @@ namespace aggro
         typename T::memory_resource;
         { type.allocate(size) } -> pointer;
         { type.deallocate(type.resource(), size) };
+        { type.construct(type.resource(), size) };
     };
     
     template<typename T>
