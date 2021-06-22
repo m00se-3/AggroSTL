@@ -323,7 +323,7 @@ namespace aggro
 		constexpr aggro::optional<T> at(size_type index)
 		{
 			if (index < m_count)
-				return alloc.resource()[index];
+				return make_optional<T>(alloc.resource()[index]);
 			else
 				return aggro::nullopt;
 		}
@@ -331,7 +331,7 @@ namespace aggro
 		constexpr aggro::optional<T> at(size_type index) const
 		{
 			if (index < m_count)
-				return alloc.resource()[index];
+				return make_optional<T>(alloc.resource()[index]);
 			else
 				return aggro::nullopt;
 		}
