@@ -129,6 +129,18 @@ namespace aggro
         }
     };
 
+    template<destructible T, typename... Args>
+    inline constexpr optional<T> make_optional(Args&&... args)
+    {
+        return optional<T>(T(forward<Args>(args)...));
+    }
+
+    template<destructible T>
+    inline constexpr optional<T> make_optional(T&& val)
+    {
+        return optional<T>(move(val));
+    }
+
     template<typename T, typename U> requires fully_comparable<T, U>
     inline bool operator==(const optional<T>& lhs, const optional<U>& rhs)
     {
