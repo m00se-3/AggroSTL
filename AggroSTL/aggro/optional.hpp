@@ -41,23 +41,6 @@ namespace aggro
         {}
 
         constexpr optional(const nullopt_t&) {}
-        constexpr optional(const optional& other) 
-        {
-            if(other)
-            {
-                emplace(other.value());
-                value_set = true;
-            }
-        }
-
-        constexpr optional(optional&& other) noexcept 
-        {
-            if(other)
-            {
-                emplace(other.value());
-                value_set = true;
-            }
-        }
 
         template<destructible U>
         constexpr explicit optional(const optional<U>& other) 
@@ -70,7 +53,7 @@ namespace aggro
         }
 
         template<destructible U>
-        constexpr explicit optional(optional<U>&& other) 
+        constexpr explicit optional(optional<U>&& other) noexcept
         {
             if(other)
             {
@@ -82,12 +65,22 @@ namespace aggro
         template<destructible U = value_type>
         constexpr optional(U&& v) : val(v), value_set(true) {}
 
-        constexpr optional& operator=(const optional& other)
+        constexpr explicit optional& operator=(const optional& other)
         {
             if(other)
             {
                 emplace(other.value());
             }
+
+            return *this;
+        }
+
+        template<destructible U = value_type>
+        constexpr explicit optional& operator=(const U& v)
+        {
+            reset();
+            val = v;
+            value_set = true;
 
             return *this;
         }
@@ -114,14 +107,17 @@ namespace aggro
 
         constexpr void reset()
         {
-            value_set = false;
-            val.~T();
+            if(value_set)
+            {
+                value_set = false;
+                val.~T();
+            }
         }
 
         template<typename... Args>
         constexpr T& emplace(Args&&... args) 
         {
-            if(value_set) reset();
+            reset();
 
             new(&val) T(std::forward<Args&&>(args)...);
 
