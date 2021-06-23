@@ -35,7 +35,7 @@ namespace aggro
         constexpr pair(T&& t, U&& u) : first(move(t)), second(move(u)) {}
 
         constexpr explicit pair(const pair& other) : first(other.first), second(other.second) {}
-        constexpr explicit pair(pair&& other) noexecpt : first(move(other.first)), second(move(other.second)) {}
+        constexpr explicit pair(pair&& other) noexcept : first(move(other.first)), second(move(other.second)) {}
 
     };
 
