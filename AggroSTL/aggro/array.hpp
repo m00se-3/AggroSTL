@@ -435,8 +435,8 @@ namespace aggro
 		//If stop is nullptr, this will stop at the end of the array.
 		constexpr void erase(T* start, T* stop = nullptr)
 		{
-			if(stop == nullptr) stop = end();
 			if (start == end()) return;
+			if (stop == nullptr) stop = end();
 			if (start == nullptr) start = begin();
 
 			while (start != stop)
