@@ -57,9 +57,7 @@ namespace aggro
 
         [[no_discard]] constexpr memory_resource allocate(size_type amount)
         {
-            m_head_node = static_cast<memory_resource>(::operator new[](amount * sizeof(T)));
-
-            return m_head_node;
+            return static_cast<memory_resource>(::operator new[](amount * sizeof(T)));
         }
 
         constexpr void deallocate(memory_resource start, size_type size)
