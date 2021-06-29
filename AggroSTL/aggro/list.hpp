@@ -37,6 +37,8 @@ namespace aggro
             
             snode* node;
 
+            constexpr snode* get() const { return node; }
+            
             constexpr T& operator*()
             {
                 return node->value;
@@ -47,7 +49,7 @@ namespace aggro
                 return node->value;
             }
 
-            constexpr _iterator& operator+(size_type index)
+            constexpr _iterator operator+(size_type index)
             {
                 while(this->node && index != 0)
                 {
@@ -98,9 +100,8 @@ namespace aggro
 
     private:
 
-        snode* m_head = nullptr;
-        size_type m_count = 0;
         allocator_type alloc;
+        size_type m_count = 0;
 
         template<typename... Args>
         constexpr snode* _emplace(snode* spot, Args&&... args)
@@ -108,7 +109,7 @@ namespace aggro
             snode* new_node = alloc.allocate(1);
             new_node->next = spot;
 
-            alloc.construct(&spot->value, forward<Args>(args)...);
+            alloc.construct(spot, forward<Args>(args)...);
             ++m_count;
             
             return new_node;
@@ -119,13 +120,14 @@ namespace aggro
         constexpr slist(const std::initializer_list<T>& init)
         {
             size_type init_size = init.size();
-            snode* current = m_head;
+            snode* current = alloc.resource();
 
             for(size_type i = 0; i < init_size; ++i)
             {
-                if(current)
+                if(alloc.resource() == nullptr)
                 {
-                    current->next = _emplace(current->next, move(*(init.begin() + i)));
+                    alloc.set_res(_emplace(nullptr, move(*(init.begin() + i))));
+                    current = alloc.resource();
                 }
                 else
                 {
@@ -135,34 +137,89 @@ namespace aggro
             }
         }
 
-        constexpr reference front() { return m_head->value; }
+        constexpr slist(const slist& other)
+        {
+            snode* current = alloc.resource();
+            
+            for(auto val : other)
+            {
+                if(alloc.resource() == nullptr)
+                {
+                    alloc.set_res(_emplace(nullptr, val));
+                    current = alloc.resource();
+                }
+                else
+                {
+                    current = _emplace(current, val);
+                }
+                current = current->next;
+            }
+        }
 
-        constexpr const_reference front() const { return m_head->value; }
+        constexpr slist(slist&& other) noexcept
+        : m_count(other.size())
+        {
+            allocator_type* o_all = other.get_allocator();
+            alloc.set_res(o_all->resource());
+            o_all->set_res(nullptr);
+        }
+
+        constexpr reference front() { return alloc.resource()->value; }
+
+        constexpr const_reference front() const { return alloc.resource()->value; }
 
         constexpr void push_front(const T& value)
         {
-            m_head = _emplace(m_head, value);
+            alloc.set_res(_emplace(alloc.resource(), value));
         }
 
         constexpr void push_front(T&& value)
         {
-            m_head = _emplace(m_head, move(value));
+            alloc.set_res(_emplace(alloc.resource(), move(value)));
         }
 
         template<typename... Args>
         constexpr void emplace_front(Args&&... args)
         {
-            m_head = _emplace(m_head, forward<Args>(args)...);
+            alloc.set_res(_emplace(alloc.resource(), forward<Args>(args)...));
         }
 
         constexpr void pop_front()
         {
-            snode new_head = m_head->next;
-            m_head->~snode();
+            snode* old_head = alloc.resource();
+            snode* new_head = old_head->next;
+            old_head->~snode();
 
-            alloc.deallocate(m_head, 1);
+            alloc.deallocate(old_head, 1);
 
-            m_head = new_head;
+            alloc.set_res(new_head);
+        }
+
+        constexpr void insert_after(iterator loc, const T& value)
+        {
+            snode* node = loc.get();
+            node->next = _emplace(node->next, value);
+        }
+
+        constexpr void insert_after(iterator loc, T&& value)
+        {
+            snode* node = loc.get();
+            node->next = _emplace(node->next, move(value));
+        }
+
+        template<typename... Args>
+        constexpr void emplace_after(iterator loc, Args&&... args)
+        {
+            snode* node = loc.get();
+            node->next = _emplace(node->next, forward<Args>(args)...);
+        }
+
+        constexpr void erase_after(iterator loc)
+        {
+            snode* node_to_delete = *(loc + 1).get();
+
+            loc.get()->next = node_to_delete->next;
+            alloc.deallocate(node_to_delete, 1);
         }
 
         constexpr ~slist() { clear(); }
@@ -171,23 +228,25 @@ namespace aggro
 
         constexpr void clear()
         {
-            snode* node = m_head;
+            snode* head = alloc.resource();
 
-            while(node)
+            while(head)
             {
-                node* temp = snode;
-                node = node->next;
+                snode* temp = head;
+                head = head->next;
                 temp.~snode();
             }
 
             m_count = 0;
-            m_head = nullptr;
+            alloc.set_res(nullptr);
         }
 
-        constexpr iterator begin() { return _iterator{m_head}; }
-        constexpr const_iterator begin() const { return _iterator{m_head}; }
+        constexpr allocator_type* get_allocator() const noexcept { return &alloc; }
 
-        constexpr iterator end() { return iterator{nullptr}; }
+        constexpr iterator begin() { return _iterator{alloc.resource()}; }
+        constexpr const_iterator begin() const { return _iterator{alloc.resource()}; }
+
+        constexpr iterator end() { return _iterator{nullptr}; }
         constexpr const_iterator end() const { return _iterator{nullptr}; }
         
         [[nodiscard("This function does not empty the list.")]] constexpr bool empty()
