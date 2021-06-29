@@ -47,19 +47,19 @@ namespace aggro
         using memory_resource = T*;
         using value_type = T::value_type;
 
-        //memory_resource m_head_node = nullptr;
+        memory_resource m_head_node = nullptr;
 
-        constexpr memory_resource resource() { return nullptr; }
+        constexpr memory_resource resource() { return m_head_node; }
 
-        constexpr const memory_resource resource() const { return nullptr; }
+        constexpr const memory_resource resource() const { return m_head_node; }
 
-        //constexpr void set_res(memory_resource other) { m_head_node = other; }
+        constexpr void set_res(memory_resource other) { m_head_node = other; }
 
         [[no_discard]] constexpr memory_resource allocate(size_type amount)
         {
-            //m_buffer = static_cast<memory_resource>(::operator new[](amount * sizeof(T)));
+            m_head_node = static_cast<memory_resource>(::operator new[](amount * sizeof(T)));
 
-            return static_cast<memory_resource>(::operator new[](amount * sizeof(T)));
+            return m_head_node;
         }
 
         constexpr void deallocate(memory_resource start, size_type size)
@@ -68,9 +68,9 @@ namespace aggro
         }
         
         template<typename... Args>
-        constexpr void construct(value_type* spot, Args&&... args)
+        constexpr void construct(memory_resource spot, Args&&... args)
         {
-            new(spot) value_type(forward<Args>(args)...);
+            new(&spot->value) value_type(forward<Args>(args)...);
         }
     };
 
