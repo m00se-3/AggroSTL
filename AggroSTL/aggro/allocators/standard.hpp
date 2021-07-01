@@ -45,7 +45,7 @@ namespace aggro
     {
         using size_type = std::size_t;
         using memory_resource = T*;
-        using value_type = T::value_type;
+        using value_type = typename T::value_type;
 
         memory_resource m_head_node = nullptr;
 
@@ -55,7 +55,7 @@ namespace aggro
 
         constexpr void set_res(memory_resource other) { m_head_node = other; }
 
-        [[no_discard]] constexpr memory_resource allocate(size_type amount)
+        [[nodiscard]] constexpr memory_resource allocate(size_type amount)
         {
             return static_cast<memory_resource>(::operator new[](amount * sizeof(T)));
         }
@@ -68,7 +68,7 @@ namespace aggro
         template<typename... Args>
         constexpr void construct(memory_resource spot, Args&&... args)
         {
-            new(&spot->value) value_type(forward<Args>(args)...);
+            new(&(spot->value)) value_type(forward<Args>(args)...);
         }
     };
 
