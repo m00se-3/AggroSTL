@@ -467,7 +467,7 @@ namespace aggro
 	}
 
 	template<os_compatible T, size_t N>
-	inline std::ostream& operator<<(std::ostream& stream, const array<T, N>& obj)
+	inline constexpr std::ostream& operator<<(std::ostream& stream, const array<T, N>& obj)
 	{
 		stream << "{ ";
 
@@ -480,7 +480,7 @@ namespace aggro
 	}
 
 	template<os_compatible T>
-	inline std::ostream& operator<<(std::ostream& stream, const dynarr<T>& obj)
+	inline constexpr std::ostream& operator<<(std::ostream& stream, const dynarr<T>& obj)
 	{
 		stream << "{ ";
 
