@@ -14,3 +14,9 @@ target_sources(
     PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/tests/arrtest.cpp
 )
+
+target_sources(
+    lists
+    PRIVATE
+    ${CMAKE_CURRENT_LIST_DIR}/tests/listtest.cpp
+)

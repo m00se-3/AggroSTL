@@ -14,6 +14,7 @@ endif(CMAKE_CXX_COMPILER_ID MATCHES MSVC)
 
 add_library(aggrostl INTERFACE)
 add_executable(arrays)
+add_executable(lists)
 include(${CMAKE_CURRENT_LIST_DIR}/AggroSTL/CMakeLists.txt)
 
 target_compile_features(aggrostl INTERFACE cxx_std_20)
@@ -25,4 +26,10 @@ target_compile_options(arrays PRIVATE ${flags})
 target_include_directories(arrays PRIVATE ${CMAKE_CURRENT_LIST_DIR}/AggroSTL/aggro/)
 target_link_libraries(arrays PRIVATE aggrostl)
 
+target_compile_features(lists PRIVATE cxx_std_20)
+target_compile_options(lists PRIVATE ${flags})
+target_include_directories(lists PRIVATE ${CMAKE_CURRENT_LIST_DIR}/AggroSTL/aggro/)
+target_link_libraries(lists PRIVATE aggrostl)
+
 add_test(NAME arraytest COMMAND arrays)
+add_test(NAME listtest COMMAND lists)
