@@ -30,14 +30,17 @@ namespace aggro
     */
     template<typename T, standard_allocator Alloc = std_node_allocator<snode<T>>>
     class slist
-    {
+    {   
+        using s_node = snode<T>;
+
         struct _iterator
         {  
             using value_type = T;
+            using size_type = std::size_t;
             
-            snode* node;
+            s_node* node = nullptr;
 
-            constexpr snode* get() const { return node; }
+            constexpr s_node* get() const { return node; }
             
             constexpr T& operator*()
             {
@@ -60,22 +63,31 @@ namespace aggro
                 return *this;
             }
 
-            constexpr T& operator++() const //prefix
+            constexpr T& operator++() //prefix
             {
                 node = node->next;
                 return node->value;
             }
 
-            constexpr T operator++(int) const //postfix
+            constexpr T operator++(int) //postfix
             {
                 T old = node->value;
                 node = node->next;
                 return old->value;
             };
 
-            constexpr operator==(const _iterator& rhs)
+            constexpr bool operator==(const _iterator& rhs)
             {
-                if(this.node == rhs.node)
+                if(this->node == rhs.node)
+                {
+                    return true;
+                }
+                return false;
+            }
+
+            constexpr bool operator!=(const _iterator& rhs)
+            {
+                if(this->node != rhs.node)
                 {
                     return true;
                 }
@@ -104,12 +116,12 @@ namespace aggro
         size_type m_count = 0;
 
         template<typename... Args>
-        constexpr snode* _emplace(snode* spot, Args&&... args)
+        constexpr s_node* _emplace(s_node* spot, Args&&... args)
         {
-            snode* new_node = alloc.allocate(1);
+            s_node* new_node = alloc.allocate(1);
             new_node->next = spot;
 
-            alloc.construct(spot, forward<Args>(args)...);
+            alloc.construct(new_node, forward<Args>(args)...);
             ++m_count;
             
             return new_node;
@@ -120,7 +132,7 @@ namespace aggro
         constexpr slist(const std::initializer_list<T>& init)
         {
             size_type init_size = init.size();
-            snode* current = alloc.resource();
+            s_node* current = nullptr;
 
             for(size_type i = 0; i < init_size; ++i)
             {
@@ -131,15 +143,16 @@ namespace aggro
                 }
                 else
                 {
-                    current = _emplace(current, move(*(init.begin() + i)));
+                    current->next = _emplace(nullptr, move(*(init.begin() + i)));
+                    current = current->next;
                 }
-                current = current->next;
+
             }
         }
 
         constexpr slist(const slist& other)
         {
-            snode* current = alloc.resource();
+            s_node* current = nullptr;
             
             for(auto val : other)
             {
@@ -150,9 +163,10 @@ namespace aggro
                 }
                 else
                 {
-                    current = _emplace(current, val);
+                    current->next = _emplace(nullptr, val);
+                    current = current->next;
                 }
-                current = current->next;
+
             }
         }
 
@@ -186,40 +200,54 @@ namespace aggro
 
         constexpr void pop_front()
         {
-            snode* old_head = alloc.resource();
-            snode* new_head = old_head->next;
-            old_head->~snode();
+            s_node* old_head = alloc.resource();
+            s_node* new_head = old_head->next;
+            old_head->~s_node();
 
             alloc.deallocate(old_head, 1);
 
             alloc.set_res(new_head);
+            --m_count;
         }
 
         constexpr void insert_after(iterator loc, const T& value)
         {
-            snode* node = loc.get();
+            if(loc.get() == nullptr) return;
+            
+            s_node* node = loc.get();
             node->next = _emplace(node->next, value);
         }
 
         constexpr void insert_after(iterator loc, T&& value)
         {
-            snode* node = loc.get();
+            if(loc.get() == nullptr) return;
+            
+            s_node* node = loc.get();
             node->next = _emplace(node->next, move(value));
         }
 
         template<typename... Args>
         constexpr void emplace_after(iterator loc, Args&&... args)
         {
-            snode* node = loc.get();
+            if(loc.get() == nullptr) return;
+            
+            s_node* node = loc.get();
             node->next = _emplace(node->next, forward<Args>(args)...);
         }
 
         constexpr void erase_after(iterator loc)
         {
-            snode* node_to_delete = *(loc + 1).get();
+            if(loc.get() == nullptr) return;
+            
+            s_node* working_node = loc.get();
+            s_node* node_to_delete = working_node->next;
 
-            loc.get()->next = node_to_delete->next;
+            working_node->next = node_to_delete->next;
+
+            node_to_delete->~s_node();
+
             alloc.deallocate(node_to_delete, 1);
+            --m_count;
         }
 
         constexpr ~slist() { clear(); }
@@ -228,13 +256,14 @@ namespace aggro
 
         constexpr void clear()
         {
-            snode* head = alloc.resource();
+            s_node* head = alloc.resource();
 
             while(head)
             {
-                snode* temp = head;
+                s_node* temp = head;
                 head = head->next;
-                temp.~snode();
+                temp->~s_node();
+                alloc.deallocate(temp, 1);
             }
 
             m_count = 0;
@@ -255,6 +284,32 @@ namespace aggro
         }
 
     };
+
+
+    template<os_compatible T>
+    inline constexpr std::ostream& operator<<(std::ostream& os, const slist<T>& list)
+    {
+        os << "{ ";
+
+        if(list.size() > 0)
+        {
+            bool first_item = true;
+
+            for(auto& item : list)
+            {
+                if(first_item)
+                    first_item = false;
+                else
+                    os << ", ";
+                
+                os << item;
+            }
+        }
+
+        os << " }";
+
+        return os;
+    }
 
 } // namespace aggro
 
