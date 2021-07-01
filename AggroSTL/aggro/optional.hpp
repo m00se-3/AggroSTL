@@ -65,7 +65,7 @@ namespace aggro
         template<destructible U = value_type>
         constexpr optional(U&& v) : val(v), value_set(true) {}
 
-        constexpr explicit optional& operator=(const optional& other)
+        constexpr optional& operator=(const optional& other)
         {
             if(other)
             {
@@ -76,7 +76,7 @@ namespace aggro
         }
 
         template<destructible U = value_type>
-        constexpr explicit optional& operator=(const U& v)
+        constexpr optional& operator=(const U& v)
         {
             reset();
             val = v;
