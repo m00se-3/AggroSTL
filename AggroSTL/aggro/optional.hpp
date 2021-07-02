@@ -32,7 +32,7 @@ namespace aggro
         constexpr optional() = default;
         constexpr ~optional() = default;
 
-        constexpr optional(const T& value)
+       constexpr optional(const T& value)
         : val(value), value_set(true)
         {}
 
@@ -40,7 +40,7 @@ namespace aggro
         : val(move(value)), value_set(true)
         {}
 
-        constexpr optional(const nullopt_t&) {}
+        constexpr optional(const nullopt_t&) : val(value_type{}) {}
 
         template<destructible U>
         constexpr explicit optional(const optional<U>& other) 
@@ -63,7 +63,7 @@ namespace aggro
         }
 
         template<destructible U = value_type>
-        constexpr optional(U&& v) : val(v), value_set(true) {}
+        constexpr optional(U&& v) : val(move(v)), value_set(true) {}
 
         constexpr optional& operator=(const optional& other)
         {
