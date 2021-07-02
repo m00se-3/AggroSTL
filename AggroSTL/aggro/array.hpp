@@ -93,6 +93,8 @@ namespace aggro
 
 		constexpr T* data() { return m_data; }
 
+		//Returns an optional value at 'index' location.
+		//Warning: This operation will copy the object!
 		constexpr aggro::optional<T> at(size_type index)
 		{
 			if (index < N)
@@ -119,7 +121,7 @@ namespace aggro
 	};
 
 	/*
-		Dynamically allocated array which replaces std::vector. By default the dynarrs grow exponentially, reducing calls to new.
+		Dynamically allocated array which replaces std::vector. By default dynarrs grow exponentially, reducing calls to new.
 		The method used to resize the array upon adding a new element can be changed using the ArrayExpandMethod enum.
 	*/
 	template<typename T, standard_allocator Alloc = std_contiguous_allocator<T>>
@@ -202,12 +204,15 @@ namespace aggro
 
 		constexpr dynarr() = default;
 
+		//Allocates a buffer of 'cap' size.
+		//Does not construct any objects.
 		constexpr dynarr(size_type cap)
 			:m_capacity(cap)
 		{
 			alloc.allocate(cap);
 		}
 
+		//Allocates a buffer of'inits.size()' size and moves the provided objects into it.
 		constexpr dynarr(std::initializer_list<T>&& inits)
 			:m_count(0), m_capacity(inits.size())
 		{
@@ -320,14 +325,8 @@ namespace aggro
 			m_capacity = 0;
 		}
 
-		constexpr aggro::optional<T> at(size_type index)
-		{
-			if (index < m_count)
-				return make_optional<T>(alloc.resource()[index]);
-			else
-				return aggro::nullopt;
-		}
-
+		//Returns an optional value at 'index' location.
+		//Warning: This operation will copy the object!
 		constexpr aggro::optional<T> at(size_type index) const
 		{
 			if (index < m_count)
@@ -371,10 +370,10 @@ namespace aggro
 		constexpr iterator end() { return alloc.resource() + m_count; }
 
 		constexpr reverse_iterator rbegin() { return alloc.resource() + m_count; }
-		constexpr reverse_iterator rend() { return alloc.resource(); }
+		constexpr reverse_iterator rend() { return alloc.resource() - 1; }
 
 		constexpr const_reverse_iterator rbegin() const { return alloc.resource() + m_count; }
-		constexpr const_reverse_iterator rend() const { return alloc.resource(); }
+		constexpr const_reverse_iterator rend() const { return alloc.resource() - 1; }
 
 		//Is the array empty?
 		[[nodiscard("This function does not empty the array.")]] constexpr bool empty() const { return begin() == end(); }
