@@ -9,6 +9,9 @@
 namespace aggro
 {
     
+    /*
+        Node struct for a slist.
+    */
     template<typename T>
     struct snode
     {
@@ -26,13 +29,15 @@ namespace aggro
     };
     
     /*
-        A singley-linked list.
+        A singley-linked list used to replace std::forward_list. The default allocator takes an
+        snode<T> as its template parameter.
     */
     template<typename T, standard_allocator Alloc = std_node_allocator<snode<T>>>
     class slist
     {   
         using s_node = snode<T>;
 
+        //This iterator meets the 'LegacyForwardIterator' standard for forward_lists.
         struct _iterator
         {  
             using value_type = T;
@@ -40,6 +45,7 @@ namespace aggro
             
             s_node* node = nullptr;
 
+            //Get the underlying pointer.
             constexpr s_node* get() const { return node; }
             
             constexpr T& operator*()
@@ -178,26 +184,32 @@ namespace aggro
             o_all->set_res(nullptr);
         }
 
+        //Return the first node.
         constexpr reference front() { return alloc.resource()->value; }
 
+        //Return the first node.
         constexpr const_reference front() const { return alloc.resource()->value; }
 
+        //Create a new node and make it the front node.
         constexpr void push_front(const T& value)
         {
             alloc.set_res(_emplace(alloc.resource(), value));
         }
 
+        //Create a new node and make it the front node.
         constexpr void push_front(T&& value)
         {
             alloc.set_res(_emplace(alloc.resource(), move(value)));
         }
 
+        //Construct a new node in place and make it the front node.
         template<typename... Args>
         constexpr void emplace_front(Args&&... args)
         {
             alloc.set_res(_emplace(alloc.resource(), forward<Args>(args)...));
         }
 
+        //Remove the head node and make the second node the new front.
         constexpr void pop_front()
         {
             s_node* old_head = alloc.resource();
@@ -210,6 +222,7 @@ namespace aggro
             --m_count;
         }
 
+        //Insert a value after the specified node location.
         constexpr void insert_after(iterator loc, const T& value)
         {
             if(loc.get() == nullptr) return;
@@ -218,6 +231,7 @@ namespace aggro
             node->next = _emplace(node->next, value);
         }
 
+        //Insert a value after the specified node location.
         constexpr void insert_after(iterator loc, T&& value)
         {
             if(loc.get() == nullptr) return;
@@ -226,6 +240,7 @@ namespace aggro
             node->next = _emplace(node->next, move(value));
         }
 
+        //Insert a new node at the specified location and construct a new object in place there.
         template<typename... Args>
         constexpr void emplace_after(iterator loc, Args&&... args)
         {
@@ -235,6 +250,7 @@ namespace aggro
             node->next = _emplace(node->next, forward<Args>(args)...);
         }
 
+        //Remove the specified node and preserve the link chain.
         constexpr void erase_after(iterator loc)
         {
             if(loc.get() == nullptr) return;
@@ -252,8 +268,10 @@ namespace aggro
 
         constexpr ~slist() { clear(); }
 
+        //Get the number of nodes currently in the list.
         constexpr size_type size() const { return m_count; }
 
+        //Remove all nodes from the list.
         constexpr void clear()
         {
             s_node* head = alloc.resource();
@@ -270,14 +288,22 @@ namespace aggro
             alloc.set_res(nullptr);
         }
 
+        //Get a pointer to the underlying allocator.
         constexpr allocator_type* get_allocator() const noexcept { return &alloc; }
 
+        //Get an iterator to the start of the list.
         constexpr iterator begin() { return _iterator{alloc.resource()}; }
+        
+        //Get an iterator to the start of the list.
         constexpr const_iterator begin() const { return _iterator{alloc.resource()}; }
 
+        //Get an iterator to the location after the end of the list.
         constexpr iterator end() { return _iterator{nullptr}; }
+        
+        //Get an iterator to the location after the end of the list.
         constexpr const_iterator end() const { return _iterator{nullptr}; }
         
+        //Is the listy empty?
         [[nodiscard("This function does not empty the list.")]] constexpr bool empty()
         {
             return (begin() == end());
