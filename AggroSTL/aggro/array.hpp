@@ -183,7 +183,7 @@ namespace aggro
 				break;
 			}
 
-			alloc.allocate(nCap);
+			alloc.set_res(alloc.allocate(nCap));
 			oCap = m_capacity;
 			m_capacity = nCap;
 
@@ -209,14 +209,14 @@ namespace aggro
 		constexpr dynarr(size_type cap)
 			:m_capacity(cap)
 		{
-			alloc.allocate(cap);
+			alloc.set_res(alloc.allocate(cap));
 		}
 
 		//Allocates a buffer of'inits.size()' size and moves the provided objects into it.
 		constexpr dynarr(std::initializer_list<T>&& inits)
 			:m_count(0), m_capacity(inits.size())
 		{
-			alloc.allocate(m_capacity);
+			alloc.set_res(alloc.allocate(m_capacity));
 			for (size_type i = 0; i < m_capacity; i++)
 			{
 				_emplace(&alloc.resource()[i], move(*(inits.begin() + i)));
@@ -227,7 +227,7 @@ namespace aggro
 		constexpr dynarr(const dynarr& other)
 			:m_count(other.size()), m_capacity(other.capacity())
 		{
-			alloc.allocate(m_capacity);
+			alloc.set_res(alloc.allocate(m_capacity));
 
 			if (alloc.resource() != nullptr)
 			{
@@ -266,7 +266,7 @@ namespace aggro
 				m_count = other.size();
 				m_capacity = other.capacity();
 
-				alloc.allocate(m_capacity);
+				alloc.set_res(alloc.allocate(m_capacity));
 
 				if (alloc.resource() != nullptr)
 				{
@@ -306,7 +306,7 @@ namespace aggro
 			{
 				alloc.deallocate(alloc.resource(), m_capacity);
 				m_capacity = list.size();
-				alloc.allocate(m_capacity);
+				alloc.set_res(alloc.allocate(m_capacity));
 			}
 
 			for (size_type i = 0; i < m_capacity; i++)
@@ -383,7 +383,7 @@ namespace aggro
 		{
 			T* temp = alloc.resource();
 
-			alloc.allocate(cap);
+			alloc.set_res(alloc.allocate(cap));
 
 			for (size_type i = 0; i < m_count; i++)
 			{
