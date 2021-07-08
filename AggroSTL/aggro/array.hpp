@@ -121,11 +121,11 @@ namespace aggro
 	};
 
 	/*
-		Dynamically allocated array which replaces std::vector. By default dynarrs grow exponentially, reducing calls to new.
+		Dynamically allocated array which replaces std::vector. By default darrays grow exponentially, reducing calls to new.
 		The method used to resize the array upon adding a new element can be changed using the ArrayExpandMethod enum.
 	*/
 	template<typename T, standard_allocator Alloc = std_contiguous_allocator<T>>
-	class dynarr
+	class darray
 	{
 	public:
 		using size_type = std::size_t;
@@ -198,22 +198,22 @@ namespace aggro
 
 	public:
 
-		friend constexpr void nullify_array(const dynarr& arr);
+		friend constexpr void nullify_array(darray& arr);
 
 		ArrayExpandMethod expand_method = ArrayExpandMethod::PLUS_HALF;
 
-		constexpr dynarr() = default;
+		constexpr darray() = default;
 
 		//Allocates a buffer of 'cap' size.
 		//Does not construct any objects.
-		constexpr dynarr(size_type cap)
+		constexpr darray(size_type cap)
 			:m_capacity(cap)
 		{
 			alloc.set_res(alloc.allocate(cap));
 		}
 
 		//Allocates a buffer of'inits.size()' size and moves the provided objects into it.
-		constexpr dynarr(std::initializer_list<T>&& inits)
+		constexpr darray(std::initializer_list<T>&& inits)
 			:m_count(0), m_capacity(inits.size())
 		{
 			alloc.set_res(alloc.allocate(m_capacity));
@@ -224,7 +224,7 @@ namespace aggro
 			}
 		}
 
-		constexpr dynarr(const dynarr& other)
+		constexpr darray(const darray& other)
 			:m_count(other.size()), m_capacity(other.capacity())
 		{
 			alloc.set_res(alloc.allocate(m_capacity));
@@ -238,7 +238,7 @@ namespace aggro
 			}
 		}
 
-		constexpr dynarr(dynarr&& other) noexcept
+		constexpr darray(darray&& other) noexcept
 			:m_count(other.size()), m_capacity(other.capacity())
 		{
 			alloc.set_res(other.data());
@@ -255,7 +255,7 @@ namespace aggro
 			return alloc.resource()[index];
 		}
 
-		constexpr dynarr& operator=(const dynarr& other)
+		constexpr darray& operator=(const darray& other)
 		{
 			if (this != &other)
 			{
@@ -280,7 +280,7 @@ namespace aggro
 			return *this;
 		}
 
-		constexpr dynarr& operator=(dynarr&& other) noexcept 
+		constexpr darray& operator=(darray&& other) noexcept 
 		{
 			if (this != &other)
 			{
@@ -298,7 +298,7 @@ namespace aggro
 			return *this;
 		}
 
-		constexpr dynarr& operator=(std::initializer_list<T>&& list)
+		constexpr darray& operator=(std::initializer_list<T>&& list)
 		{
 			clear();
 			
@@ -318,7 +318,7 @@ namespace aggro
 			return *this;
 		}
 
-		constexpr ~dynarr()
+		constexpr ~darray()
 		{
 			clear();
 			alloc.deallocate(alloc.resource(), m_capacity);
@@ -458,7 +458,7 @@ namespace aggro
 
 	//Used for move operations.
 	template<typename T>
-	constexpr void nullify_array(const dynarr<T>& arr)
+	constexpr void nullify_array(darray<T>& arr)
 	{
 		arr.count = 0;
 		arr.capacity = 0;
@@ -479,7 +479,7 @@ namespace aggro
 	}
 
 	template<os_compatible T>
-	inline constexpr std::ostream& operator<<(std::ostream& stream, const dynarr<T>& obj)
+	inline constexpr std::ostream& operator<<(std::ostream& stream, const darray<T>& obj)
 	{
 		stream << "{ ";
 
