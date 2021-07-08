@@ -93,14 +93,14 @@ namespace aggro
 
 		constexpr T* data() { return m_data; }
 
-		//Returns an optional value at 'index' location.
-		//Warning: This operation will copy the object!
-		constexpr aggro::optional<T> at(size_type index)
+		//Returns an optional reference to the object at 'index' location
+		//provided that the value is within bounds.
+		constexpr aggro::optional_ref<T> at(size_type index)
 		{
 			if (index < N)
 				return m_data[index];
 			else
-				return aggro::nullopt;
+				return aggro::nullopt_ref_t<T>();
 		}
 
 		[[nodiscard("This function does not empty the array.")]] constexpr bool empty() const { return begin() == end(); }
@@ -325,14 +325,14 @@ namespace aggro
 			m_capacity = 0;
 		}
 
-		//Returns an optional value at 'index' location.
-		//Warning: This operation will copy the object!
-		constexpr aggro::optional<T> at(size_type index) const
+		//Returns an optional reference to the object at 'index' location
+		//provided that the value is within bounds.
+		constexpr aggro::optional_ref<T> at(size_type index) const
 		{
 			if (index < m_count)
-				return make_optional<T>(alloc.resource()[index]);
+				return alloc.resource()[index];
 			else
-				return aggro::nullopt;
+				return aggro::nullopt_ref_t<T>();
 		}
 
 		//Return the first element in the array.

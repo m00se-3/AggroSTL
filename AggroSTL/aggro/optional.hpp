@@ -14,6 +14,15 @@ namespace aggro
 
     inline constexpr nullopt_t nullopt{};
 
+    //Used as a helper struct when constructing optional_refs that are not referencing anything.
+    //(Not required)
+    template<typename T>
+    struct nullopt_ref_t
+    {
+        T dummy_value {};
+        constexpr nullopt_ref_t() {}
+    };
+
     /*
         A class that represents a value that may not exist.
         Used for returning from operations that may fail.
@@ -202,6 +211,150 @@ namespace aggro
 
         return false;
     }
+
+
+
+    /*
+        A class that represents a reference to something that may not exist.
+        This class is intended to create editable references to existing variables and
+        container objects, such as an object in a darray.
+
+        Warning!! You must ensure that the object being referenced out-lives the optional_ref!
+        Attempting to dereference an optional_ref can be dangerous if the object it references no
+        longer exists!
+    */
+    template<destructible T>
+    class optional_ref
+    {
+    public:
+        using value_type = T;
+        using reference = T&;
+    
+    private:
+        reference val;
+        bool ref_set = false;
+
+    public:
+        constexpr optional_ref() = default;
+        constexpr ~optional_ref() = default;
+
+       constexpr optional_ref(T& value)
+        : val(value), ref_set(true)
+        {}
+
+        constexpr optional_ref(nullopt_ref_t<T>&& nu) : val(nu.dummy_value) {}
+
+        template<destructible U>
+        constexpr explicit optional_ref(const optional_ref& other) = delete;
+
+        template<destructible U>
+        constexpr explicit optional_ref(optional_ref&& other) noexcept = delete;
+
+        constexpr optional_ref& operator=(const optional_ref& other)
+        {
+            if(other)
+            {
+                val = other.ref();
+            }
+
+            return *this;
+        }
+
+        template<destructible U = value_type>
+        constexpr optional_ref& operator=(U& v)
+        {
+            reset();
+            val = v;
+            ref_set = true;
+
+            return *this;
+        }
+
+        constexpr T& operator*() { return val; }
+
+        constexpr const T& operator*() const { return val; }
+
+        constexpr explicit operator bool() const { return ref_set; }
+
+        constexpr T& ref() { return val; }
+
+        constexpr const T& ref() const { return val; }
+
+        constexpr bool has_ref() const { return ref_set; }
+
+        constexpr void reset()
+        {
+            ref_set = false;
+        }
+    };
+
+    template<typename T, typename U> requires fully_comparable<T, U>
+    inline bool operator==(const optional_ref<T>& lhs, const optional_ref<U>& rhs)
+    {
+        if(lhs && rhs)
+        {
+            return (lhs.ref() == rhs.ref());
+        }
+
+        return false;
+    }
+
+    template<typename T, typename U> requires fully_comparable<T, U>
+    inline bool operator!=(const optional_ref<T>& lhs, const optional_ref<U>& rhs)
+    {
+        if(lhs && rhs)
+        {
+            return (lhs.ref() != rhs.ref());
+        }
+
+        return false;
+    }
+
+    template<typename T, typename U> requires fully_comparable<T, U>
+    inline bool operator>=(const optional_ref<T>& lhs, const optional_ref<U>& rhs)
+    {
+        if(lhs && rhs)
+        {
+            return (lhs.ref() >= rhs.ref());
+        }
+
+        return false;
+    }
+
+    template<typename T, typename U> requires fully_comparable<T, U>
+    inline bool operator<=(const optional_ref<T>& lhs, const optional_ref<U>& rhs)
+    {
+        if(lhs && rhs)
+        {
+            return (lhs.ref() <= rhs.ref());
+        }
+
+        return false;
+    }
+
+    template<typename T, typename U> requires fully_comparable<T, U>
+    inline bool operator>(const optional_ref<T>& lhs, const optional_ref<U>& rhs)
+    {
+        if(lhs && rhs)
+        {
+            return (lhs.ref() > rhs.ref());
+        }
+
+        return false;
+    }
+
+    template<typename T, typename U> requires fully_comparable<T, U>
+    inline bool operator<(const optional_ref<T>& lhs, const optional_ref<U>& rhs)
+    {
+        if(lhs && rhs)
+        {
+            return (lhs.ref() < rhs.ref());
+        }
+
+        return false;
+    }
+
+    
 
 } // namespace aggro
 

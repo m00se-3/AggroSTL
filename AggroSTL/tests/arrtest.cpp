@@ -21,7 +21,7 @@ int main()
     auto check = fs.at(6);
 
     if(!check)
-        std::cout << "Index 6 does not exist for string dynarr.\n";
+        std::cout << "Index 6 does not exist for string darray.\n";
 
     auto check1 = other.at(3);
 
@@ -35,7 +35,16 @@ int main()
     {
         const char* res = (comp2 == comp1) ? "are" : "are not";
 
-        std::cout << comp1.value_or(500) << " and " << comp2.value() << " " << res << " equal.\n";
+        std::cout << comp1.ref() << " and " << comp2.ref() << " " << res << " equal.\n";
     }
+
+    auto ch = fs.at(2);
+
+    if(ch)
+    {
+        *ch = "Charlie Brown!";
+    }
+
+    std::cout << fs << "\n";
 
 }
