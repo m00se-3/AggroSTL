@@ -9,7 +9,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES MSVC)
 elseif(CMAKE_CXX_COMPILER_ID MATCHES GNU)
    list(APPEND flags "-Wall" "-Wextra" "-Wpedantic")
 elseif(CMAKE_CXX_COMPILER_ID MATCHES Clang)
-   list(APPEND flags "-Wall" "-Wextra" "-Wpedantic" "-Wno-c++98-compat" "-Wno-c++98-compat-pedantic")
+   list(APPEND flags "-Wall" "-Wextra" "-Wpedantic" "-Wno-newline-eof" "-Wno-c++98-compat" "-Wno-c++98-compat-pedantic")
 endif(CMAKE_CXX_COMPILER_ID MATCHES MSVC)
 
 add_library(aggrostl INTERFACE)
