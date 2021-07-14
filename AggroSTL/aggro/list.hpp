@@ -27,21 +27,14 @@ namespace aggro
         constexpr snode(T&& val, snode* n) : value(move(val)), next(n) {}
         constexpr ~snode() = default;
     };
-    
-    /*
-        A singley-linked list used to replace std::forward_list. The default allocator takes an
-        snode<T> as its template parameter.
-    */
-    template<typename T, standard_allocator Alloc = std_node_allocator<snode<T>>>
-    class slist
-    {   
-        using s_node = snode<T>;
 
-        //This iterator meets the 'LegacyForwardIterator' standard for forward_lists.
+    //This iterator meets the 'LegacyForwardIterator' standard for forward_lists.
+        template<typename T>
         struct _iterator
         {  
             using value_type = T;
             using size_type = std::size_t;
+            using s_node = snode<T>;
             
             s_node* node = nullptr;
 
@@ -80,26 +73,37 @@ namespace aggro
                 T old = node->value;
                 node = node->next;
                 return old->value;
-            };
-
-            constexpr bool operator==(const _iterator& rhs)
-            {
-                if(this->node == rhs.node)
-                {
-                    return true;
-                }
-                return false;
-            }
-
-            constexpr bool operator!=(const _iterator& rhs)
-            {
-                if(this->node != rhs.node)
-                {
-                    return true;
-                }
-                return false;
             }
         };
+
+        template<typename T>
+        inline constexpr bool operator==(const _iterator<T>& lhs, const _iterator<T>& rhs)
+        {
+            if(lhs.node == rhs.node)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        template<typename T>
+        inline constexpr bool operator!=(const _iterator<T>& lhs, const _iterator<T>& rhs)
+        {
+            if(lhs.node != rhs.node)
+            {
+                return true;
+            }
+            return false;
+        }
+    
+    /*
+        A singley-linked list used to replace std::forward_list. The default allocator takes an
+        snode<T> as its template parameter.
+    */
+    template<typename T, standard_allocator Alloc = std_node_allocator<snode<T>>>
+    class slist
+    {   
+        using s_node = snode<T>;
 
     public:
 
@@ -112,8 +116,8 @@ namespace aggro
 		using pointer = T*;
 		using const_pointer = const T*;
 
-		using iterator = _iterator;
-        using const_iterator = const _iterator;
+		using iterator = _iterator<T>;
+        using const_iterator = const _iterator<T>;
 		using allocator_type = Alloc;
 
     private:
@@ -301,16 +305,16 @@ namespace aggro
         constexpr allocator_type* get_allocator() const noexcept { return &alloc; }
 
         //Get an iterator to the start of the list.
-        constexpr iterator begin() { return _iterator{alloc.resource()}; }
+        constexpr iterator begin() { return iterator{alloc.resource()}; }
         
         //Get an iterator to the start of the list.
-        constexpr const_iterator begin() const { return _iterator{alloc.resource()}; }
+        constexpr const_iterator begin() const { return iterator{alloc.resource()}; }
 
         //Get an iterator to the location after the end of the list.
-        constexpr iterator end() { return _iterator{nullptr}; }
+        constexpr iterator end() { return iterator{nullptr}; }
         
         //Get an iterator to the location after the end of the list.
-        constexpr const_iterator end() const { return _iterator{nullptr}; }
+        constexpr const_iterator end() const { return iterator{nullptr}; }
         
         //Is the listy empty?
         [[nodiscard("This function does not empty the list.")]] constexpr bool empty()
