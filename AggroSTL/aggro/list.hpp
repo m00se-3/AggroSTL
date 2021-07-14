@@ -191,22 +191,25 @@ namespace aggro
         constexpr const_reference front() const { return alloc.resource()->value; }
 
         //Create a new node and make it the front node.
-        constexpr void push_front(const T& value)
+        constexpr iterator push_front(const T& value)
         {
             alloc.set_res(_emplace(alloc.resource(), value));
+            return iterator{ alloc.resource() };
         }
 
         //Create a new node and make it the front node.
-        constexpr void push_front(T&& value)
+        constexpr iterator push_front(T&& value)
         {
             alloc.set_res(_emplace(alloc.resource(), move(value)));
+            return iterator{ alloc.resource() };
         }
 
         //Construct a new node in place and make it the front node.
         template<typename... Args>
-        constexpr void emplace_front(Args&&... args)
+        constexpr iterator emplace_front(Args&&... args)
         {
             alloc.set_res(_emplace(alloc.resource(), forward<Args>(args)...));
+            return iterator{ alloc.resource() };
         }
 
         //Remove the head node and make the second node the new front.
@@ -223,31 +226,37 @@ namespace aggro
         }
 
         //Insert a value after the specified node location.
-        constexpr void insert_after(iterator loc, const T& value)
+        constexpr iterator insert_after(iterator loc, const T& value)
         {
-            if(loc.get() == nullptr) return;
+            if(loc.get() == nullptr) return iterator { nullptr };
             
             s_node* node = loc.get();
             node->next = _emplace(node->next, value);
+
+            return iterator{ node->next };
         }
 
         //Insert a value after the specified node location.
-        constexpr void insert_after(iterator loc, T&& value)
+        constexpr iterator insert_after(iterator loc, T&& value)
         {
-            if(loc.get() == nullptr) return;
+            if(loc.get() == nullptr) return iterator { nullptr };
             
             s_node* node = loc.get();
             node->next = _emplace(node->next, move(value));
+
+            return iterator{ node->next };
         }
 
         //Insert a new node at the specified location and construct a new object in place there.
         template<typename... Args>
-        constexpr void emplace_after(iterator loc, Args&&... args)
+        constexpr iterator emplace_after(iterator loc, Args&&... args)
         {
-            if(loc.get() == nullptr) return;
+            if(loc.get() == nullptr) return iterator { nullptr };
             
             s_node* node = loc.get();
             node->next = _emplace(node->next, forward<Args>(args)...);
+
+            return iterator{ node->next };
         }
 
         //Remove the specified node and preserve the link chain.
