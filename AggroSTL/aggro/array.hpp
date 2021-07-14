@@ -397,21 +397,21 @@ namespace aggro
 		}
 
 		//Store a copy of the provided object in the array.
-		constexpr void push_back(const T& element)
+		constexpr reference push_back(const T& element)
 		{
-			emplace_back(element);
+			return emplace_back(element);
 		}
 
 		//Move the provided object into the array.
-		constexpr void push_back(T&& element)
+		constexpr reference push_back(T&& element)
 		{
-			emplace_back(move(element));
+			return emplace_back(move(element));
 		}
 
 		//Construct an object of type T directly into the array using the
 		//provided arguments.
 		template<typename... Args>
-		constexpr void emplace_back(Args&&... args)
+		constexpr reference emplace_back(Args&&... args)
 		{
 			if (m_count >=m_capacity)
 				grow();
@@ -419,6 +419,7 @@ namespace aggro
 			_emplace(&alloc.resource()[m_count], forward<Args>(args)...);
 
 			++m_count;
+			return back();
 		}
 
 		//Erase the last element. Similar to pop_back.
