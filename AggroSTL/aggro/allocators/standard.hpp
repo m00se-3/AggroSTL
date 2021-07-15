@@ -13,8 +13,10 @@ namespace aggro
         using memory_resource = T*;
         using value_type = T;
 
+    private:
         memory_resource m_buffer = nullptr; //Pointer to the beginning of the memory buffer.
 
+    public:
         //Returns a pointer to the memory resource.
         constexpr memory_resource resource() { return m_buffer; }
 
@@ -50,17 +52,37 @@ namespace aggro
         using size_type = std::size_t;
         using memory_resource = T*;
         using value_type = typename T::value_type;
-
+    
+    private:
         memory_resource m_head_node = nullptr; //Pointer to the head node.
+        memory_resource m_tail_node = nullptr; //Pointer to the tail node;
 
+    public:
         //Returns a pointer to the head node.
         constexpr memory_resource resource() { return m_head_node; }
 
         //Returns a pointer to the head node.
         constexpr const memory_resource resource() const { return m_head_node; }
 
+        //Returns a pointer to the tail node.
+        constexpr memory_resource resource_rev() { return m_tail_node; }
+
+        //Returns a pointer to the tail node.
+        constexpr const memory_resource resource_rev() const { return m_tail_node; }
+
         //Changes the node that is pointed to as the head.
-        constexpr void set_res(memory_resource other) { m_head_node = other; }
+        constexpr void set_res(memory_resource first, memory_resource last = nullptr)
+        {
+            if(first) m_head_node = first;
+            if(last) m_tail_node = last;
+        }
+
+        //Remove all pointers from this allocator.
+        constexpr void unlink()
+        {
+            m_head_node = nullptr;
+            m_tail_node = nullptr;
+        }
 
         //Allocates a new node and returns a pointer to it.
         [[nodiscard]] constexpr memory_resource allocate(size_type amount)
