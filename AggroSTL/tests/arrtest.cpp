@@ -10,9 +10,15 @@ int main()
     aggro::array<int, 5> other = { 6, 7, 8, 9, 0 };
 
     other = is;
+
+    fs.expand_factor = 0.5f;
     
     fs = { "Hello", "World" };
+
+    std::cout << "Capacity of fs is: " << fs.capacity() << "\n";
     fs.emplace_back("Escamo!!");
+
+    std::cout << "Capacity of fs is: " << fs.capacity() << "\n";
 
     std::cout << is << '\n';
     std::cout << other << '\n';
@@ -44,6 +50,12 @@ int main()
     {
         *ch = "Charlie Brown!";
     }
+
+    std::cout << fs << "\n";
+
+
+    fs.erase(fs.begin() + 1, fs.begin() + 2);
+    fs.shrink_to_fit();
 
     std::cout << fs << "\n";
 
