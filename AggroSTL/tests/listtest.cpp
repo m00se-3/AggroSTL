@@ -5,6 +5,8 @@
 
 int main()
 {
+    //plain data test
+
     aggro::slist<int> nums = { 1, 2, 3, 4 };
 
     std::cout << nums << "\n";
@@ -27,11 +29,11 @@ int main()
 
     // strings test
 
-    aggro::slist<std::string> words = { "one", "two", "three", "four" };
+    aggro::dlist<std::string> words = { "one", "two", "three", "four" };
 
     std::cout << words << "\n";
 
-    words.insert_after(words.begin() + 3, "cat");
+    words.insert(words.begin() + 3, "cat");
 
     std::cout << words << "\n";
 
@@ -39,11 +41,12 @@ int main()
 
     std::cout << words << "\n";
 
-    words.push_front("dog");
+    words.emplace_front("dog");
+    words.emplace_back("fish");
 
     std::cout << words << "\n";
 
-    words.erase_after(words.begin() + 2);
+    words.erase(words.begin() + 2);
 
     std::cout << words << "\n";
 }
