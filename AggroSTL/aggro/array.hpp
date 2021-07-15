@@ -6,11 +6,6 @@
 
 namespace aggro
 {
-	enum class ArrayExpandMethod : uint8_t
-	{
-		INCREMENT = 0, PLUS_HALF, DOUBLE
-	};
-
 	//Stack allocated array which supports iterators. Replaces std::array.
 	template<typename T, std::size_t N>
 	class array
@@ -167,20 +162,17 @@ namespace aggro
 					return 1;
 			};
 
-			switch (expand_method)
+			if(expand_factor <= 1.0f)
 			{
-			case ArrayExpandMethod::INCREMENT:
 				nCap = decide(m_capacity + 1);
-				break;
-			case ArrayExpandMethod::PLUS_HALF:
-				nCap = decide(m_capacity + (m_capacity / 2));
-				break;
-			case ArrayExpandMethod::DOUBLE:
-				nCap = decide(m_capacity * 2);
-				break;
-			default:
-				nCap = decide(m_capacity + 1);
-				break;
+			}
+			else
+			{
+				size_type test_cap = static_cast<size_type>((float)m_capacity * expand_factor);
+
+				if(test_cap == m_capacity) ++test_cap;
+
+				nCap = decide(test_cap);
 			}
 
 			alloc.set_res(alloc.allocate(nCap));
@@ -196,11 +188,26 @@ namespace aggro
 			alloc.deallocate(temp, oCap);
 		}
 
+		//Defragments the array after erasing elements.
+		constexpr void condense(T* hole_start, T* hole_end, T* end_ptr)
+		{
+			if(hole_end == end_ptr) return;
+
+			while(hole_end != end_ptr)
+			{
+				_emplace(hole_start, move(*hole_end));
+				hole_end->~T();
+
+				++hole_start;
+				++hole_end;
+			}
+		}
+
 	public:
 
 		friend constexpr void nullify_array(darray& arr);
 
-		ArrayExpandMethod expand_method = ArrayExpandMethod::PLUS_HALF;
+		float expand_factor = 1.0f;
 
 		constexpr darray() = default;
 
@@ -396,6 +403,12 @@ namespace aggro
 			m_capacity = cap;
 		}
 
+		//Does what the name implies. Has to allocate a new block of memory.
+		constexpr void shrink_to_fit()
+		{
+			reserve(size());
+		}
+
 		//Store a copy of the provided object in the array.
 		constexpr reference push_back(const T& element)
 		{
@@ -433,18 +446,24 @@ namespace aggro
 		//Erase all elements from the starting point to the stopping point.
 		//If start is nullptr, this will start at the begining of the array.
 		//If stop is nullptr, this will stop at the end of the array.
+		//Stop should be the location after the last element you want to erase.
 		constexpr void erase(T* start, T* stop = nullptr)
 		{
 			if (start == end()) return;
 			if (stop == nullptr) stop = end();
 			if (start == nullptr) start = begin();
 
+			T* hole_start = start;
+			T* end_ptr = end();
+			
 			while (start != stop)
 			{
 				start->~T();
 				m_count--;
 				start++;
 			}
+
+			condense(hole_start, stop, end_ptr);
 		}
 
 		//clears the whole array and resets the pushm_counter.
