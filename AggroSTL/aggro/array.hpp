@@ -117,7 +117,7 @@ namespace aggro
 
 	/*
 		Dynamically allocated array which replaces std::vector. By default darrays grow exponentially, reducing calls to new.
-		The method used to resize the array upon adding a new element can be changed using the ArrayExpandMethod enum.
+		The method used to resize the array upon adding a new element can be changed using the expand_factor member variable.
 	*/
 	template<typename T, standard_allocator Alloc = std_contiguous_allocator<T>>
 	class darray
