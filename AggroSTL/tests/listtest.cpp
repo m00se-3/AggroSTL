@@ -1,9 +1,9 @@
+#define AGGRO_MEMORY_PROFILE
+#include "mem_profile.hpp"
 #include "list.hpp"
-#include <iostream>
 #include <string>
 
-
-int main()
+static void test_slist_with_pod([[maybe_unused]] aggro::heap_counter h)
 {
     //plain data test
 
@@ -26,7 +26,10 @@ int main()
     nums.erase_after(nums.begin() + 2);
 
     std::cout << nums << "\n";
+}
 
+static void test_dlist_with_strings([[maybe_unused]] aggro::heap_counter h)
+{
     // strings test
 
     aggro::dlist<std::string> words = { "one", "two", "three", "four" };
@@ -49,4 +52,13 @@ int main()
     words.erase(words.begin() + 2);
 
     std::cout << words << "\n";
+}
+
+
+int main()
+{
+    
+    MEM_CHECK(test_slist_with_pod)
+    MEM_CHECK(test_dlist_with_strings)
+    
 }
