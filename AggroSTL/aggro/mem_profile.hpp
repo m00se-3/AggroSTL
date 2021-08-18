@@ -1,34 +1,84 @@
 #ifndef MEM_PROFILE_HPP
 #define MEM_PROFILE_HPP
+#include <iostream>
+
+#ifdef AGGRO_MEMORY_PROFILE
+#define PRINT_METRICS \
+std::cout << aggro::heap_counter::get_allocated() << " bytes of memory allocated.\n" << aggro::heap_counter::get_deleted() << " bytes deallocated.\n\n";
+#endif // AGGRO_MEMORY_PROFILE
 
 namespace aggro
 {
-    
+    /*
+        This struct is used to keep track of memory allocations and deallocations in order to detect memory leaks.
+    */
+    struct heap_counter
+    {
+        inline static size_t mem_alloc = 0u;
+        inline static size_t mem_delete = 0u;
+
+        inline static size_t get_allocated() { return mem_alloc; }
+
+        inline static size_t get_deleted() { return mem_delete; }
+
+        inline static void add(size_t bytes)
+        {
+            mem_alloc += bytes;
+        }
+
+        inline static void remove(size_t bytes)
+        {
+            mem_delete += bytes;
+        }
+
+        heap_counter() = default;
+        ~heap_counter()
+        {
+            PRINT_METRICS
+            mem_alloc = 0u;
+            mem_delete = 0u;
+        }
+    };
+
 } // namespace aggro
 
+#ifdef AGGRO_MEMORY_PROFILE
 /*
     Override global new and delete operators.
 */
 
-[[nodiscard]] inline constexpr void* operator new(size_t size)  //Global single object
+[[nodiscard]] inline void* operator new(size_t size)  //Global single object
 {
-    return ::operator new(size);
+    aggro::heap_counter::add(size);
+    return malloc(size);
 }
 
-[[nodiscard]] inline constexpr void* operator new[](size_t size)    //Global object array
+[[nodiscard]] inline void* operator new[](size_t size)    //Global object array
 {
-    return ::operator new[](size);
+    aggro::heap_counter::add(size);
+    return malloc(size);
 }
 
-inline constexpr void operator delete(void* ptr, size_t size) //Global single object delete
+inline void operator delete(void* ptr, size_t size) //Global single object delete
 {
-    ::operator delete(ptr, size);
+    aggro::heap_counter::remove(size);
+    free(ptr);
 }
 
-inline constexpr void operator delete[](void* ptr, size_t size)   //Global object array delete
+inline void operator delete[](void* ptr, size_t size)   //Global object array delete
 {
-    ::operator delete[](ptr, size);
+    aggro::heap_counter::remove(size);
+    free(ptr);
 }
 
+#define MEM_CHECK(func) \
+std::cout << "Function name " << #func << ":\n";\
+func(aggro::heap_counter());
+
+#else
+#define PRINT_METRICS 
+#define MEM_CHECK(func) 
+
+#endif //AGGRO_MEMORY_PROFILE
 
 #endif // MEM_PROFILE_HPP
