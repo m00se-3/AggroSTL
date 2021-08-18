@@ -505,7 +505,7 @@ namespace aggro
 
 	//Used for move operations.
 	template<typename T>
-	constexpr void nullify_array(darray<T>& arr)
+	inline constexpr void nullify_array(darray<T>& arr)
 	{
 		arr.count = 0;
 		arr.capacity = 0;
