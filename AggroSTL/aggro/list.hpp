@@ -28,73 +28,73 @@ namespace aggro
         constexpr ~snode() = default;
     };
 
-        //This iterator meets the 'LegacyForwardIterator' standard for forward_lists.
-        template<typename T>
-        struct s_iterator
-        {  
-            using value_type = T;
-            using size_type = std::size_t;
-            using s_node = snode<T>;
-            
-            s_node* node = nullptr;
+    //This iterator meets the 'LegacyForwardIterator' standard for forward_lists.
+    template<typename T>
+    struct s_iterator
+    {  
+        using value_type = T;
+        using size_type = std::size_t;
+        using s_node = snode<T>;
+        
+        s_node* node = nullptr;
 
-            //Get the underlying pointer.
-            constexpr s_node* get() const { return node; }
-            
-            constexpr T& operator*()
-            {
-                return node->value;
-            }
-
-            constexpr const T& operator*() const
-            {
-                return node->value;
-            }
-
-            constexpr s_iterator operator+(size_type index)
-            {
-                while(this->node && index != 0)
-                {
-                    this->node = this->node->next;
-                    --index;
-                }
-
-                return *this;
-            }
-
-            constexpr T& operator++() //prefix
-            {
-                node = node->next;
-                return node->value;
-            }
-
-            constexpr T operator++(int) //postfix
-            {
-                T old = node->value;
-                node = node->next;
-                return old->value;
-            }
-        };
-
-        template<typename T>
-        inline constexpr bool operator==(const s_iterator<T>& lhs, const s_iterator<T>& rhs)
+        //Get the underlying pointer.
+        constexpr s_node* get() const { return node; }
+        
+        constexpr T& operator*()
         {
-            if(lhs.node == rhs.node)
-            {
-                return true;
-            }
-            return false;
+            return node->value;
         }
 
-        template<typename T>
-        inline constexpr bool operator!=(const s_iterator<T>& lhs, const s_iterator<T>& rhs)
+        constexpr const T& operator*() const
         {
-            if(lhs.node != rhs.node)
-            {
-                return true;
-            }
-            return false;
+            return node->value;
         }
+
+        constexpr s_iterator operator+(size_type index)
+        {
+            while(this->node && index != 0)
+            {
+                this->node = this->node->next;
+                --index;
+            }
+
+            return *this;
+        }
+
+        constexpr T& operator++() //prefix
+        {
+            node = node->next;
+            return node->value;
+        }
+
+        constexpr T operator++(int) //postfix
+        {
+            T old = node->value;
+            node = node->next;
+            return old->value;
+        }
+    };
+
+    template<typename T>
+    inline constexpr bool operator==(const s_iterator<T>& lhs, const s_iterator<T>& rhs)
+    {
+        if(lhs.node == rhs.node)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    template<typename T>
+    inline constexpr bool operator!=(const s_iterator<T>& lhs, const s_iterator<T>& rhs)
+    {
+        if(lhs.node != rhs.node)
+        {
+            return true;
+        }
+        return false;
+    }
     
     /*
         A singley-linked list used to replace std::forward_list. The default allocator takes an
