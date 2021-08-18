@@ -2,11 +2,6 @@
 #define MEM_PROFILE_HPP
 #include <iostream>
 
-#ifdef AGGRO_MEMORY_PROFILE
-#define PRINT_METRICS \
-std::cout << aggro::heap_counter::get_allocated() << " bytes of memory allocated.\n" << aggro::heap_counter::get_deleted() << " bytes deallocated.\n\n";
-#endif // AGGRO_MEMORY_PROFILE
-
 namespace aggro
 {
     /*
@@ -16,10 +11,6 @@ namespace aggro
     {
         inline static size_t mem_alloc = 0u;
         inline static size_t mem_delete = 0u;
-
-        inline static size_t get_allocated() { return mem_alloc; }
-
-        inline static size_t get_deleted() { return mem_delete; }
 
         inline static void add(size_t bytes)
         {
@@ -34,7 +25,7 @@ namespace aggro
         heap_counter() = default;
         ~heap_counter()
         {
-            PRINT_METRICS
+            std::cout << mem_alloc << " bytes of memory allocated.\n" << mem_delete << " bytes deallocated.\n\n";
             mem_alloc = 0u;
             mem_delete = 0u;
         }
@@ -76,7 +67,6 @@ std::cout << "Function name " << #func << ":\n";\
 func(aggro::heap_counter());
 
 #else
-#define PRINT_METRICS 
 #define MEM_CHECK(func) 
 
 #endif //AGGRO_MEMORY_PROFILE
