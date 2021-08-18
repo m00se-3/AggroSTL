@@ -143,8 +143,8 @@ namespace aggro
 	private:
 
 		allocator_type alloc;
-		size_type m_count 0u;
-		size_type m_capacity 0u;
+		size_type m_count = 0u;
+		size_type m_capacity = 0u;
 
 		template<typename... Args>
 		constexpr void _emplace(T* spot, Args&&... args)
