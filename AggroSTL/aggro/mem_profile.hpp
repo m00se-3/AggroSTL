@@ -6,6 +6,8 @@ namespace aggro
 {
     /*
         This struct is used to keep track of memory allocations and deallocations in order to detect memory leaks.
+        All test functions in the test suite require you to pass in an object of type head_counter and execute it
+        via the macro MEM_CHECK.
     */
     struct heap_counter
     {
