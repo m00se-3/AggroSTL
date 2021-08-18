@@ -116,8 +116,10 @@ namespace aggro
 	};
 
 	/*
-		Dynamically allocated array which replaces std::vector. By default darrays grow exponentially, reducing calls to new.
+		Dynamically allocated array which replaces std::vector. By default darrays grow exponentially, reducing reallocations.
 		The method used to resize the array upon adding a new element can be changed using the expand_factor member variable.
+		If the expand_factor variable is 1.0f or less, the darray will grow by 1 each time. If it is above 1.0f the darray will
+		grow by a factor of the value of expand_factor.
 	*/
 	template<typename T, standard_allocator Alloc = std_contiguous_allocator<T>>
 	class darray
@@ -156,10 +158,10 @@ namespace aggro
 			size_type nCap, oCap;
 
 			auto decide = [](size_type test) -> size_type {
-				if (test > 0)
+				if (test > 0u)
 					return test;
 				else
-					return 1;
+					return 1u;
 			};
 
 			if(expand_factor <= 1.0f)
@@ -205,7 +207,7 @@ namespace aggro
 
 	public:
 
-		friend constexpr void nullify_array(darray& arr);
+		friend inline constexpr void nullify_array(darray& arr);
 
 		float expand_factor = 1.0f;
 
