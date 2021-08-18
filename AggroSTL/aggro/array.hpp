@@ -141,8 +141,8 @@ namespace aggro
 	private:
 
 		allocator_type alloc;
-		size_type m_count {};
-		size_type m_capacity {};
+		size_type m_count 0u;
+		size_type m_capacity 0u;
 
 		template<typename... Args>
 		constexpr void _emplace(T* spot, Args&&... args)
@@ -401,6 +401,33 @@ namespace aggro
 			alloc.deallocate(temp, m_capacity);
 
 			m_capacity = cap;
+		}
+
+		//Resizes the array to a specified size. Elements beyond the specified count are deleted.
+		constexpr void resize(size_type num)
+		{
+			if (num < size())
+			{
+				erase(begin() + num);
+			}
+
+			reserve(num);
+		}
+
+		//Resizes the array to a specified size. New elements created are given the specified value.
+		constexpr void resize(size_type num, const value_type& value)
+		{
+			if (num < size())
+			{
+				erase(begin() + num);
+			}
+
+			reserve(num);
+
+			while (m_count > m_capacity)
+			{
+				push_back(value);
+			}
 		}
 
 		//Does what the name implies. Has to allocate a new block of memory.
