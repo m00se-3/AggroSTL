@@ -401,7 +401,7 @@ namespace aggro
 
             constexpr d_iterator operator+(size_type index)
             {
-                while(this->node && index != 0)
+                while(this->node && index != 0u)
                 {
                     this->node = this->node->next;
                     --index;
@@ -412,7 +412,7 @@ namespace aggro
 
             constexpr d_iterator operator-(size_type index)
             {
-                while(this->node && index != 0)
+                while(this->node && index != 0u)
                 {
                     this->node = this->node->prev;
                     --index;
@@ -427,7 +427,7 @@ namespace aggro
                 return node->value;
             }
 
-            constexpr T operator++(int) //postfix
+            constexpr T& operator++(int) //postfix
             {
                 T old = node->value;
                 node = node->next;
@@ -440,7 +440,7 @@ namespace aggro
                 return node->value;
             }
 
-            constexpr T operator--(int) //postfix
+            constexpr T& operator--(int) //postfix
             {
                 T old = node->value;
                 node = node->prev;
