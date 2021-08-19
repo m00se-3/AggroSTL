@@ -495,7 +495,7 @@ namespace aggro
 			condense(hole_start, stop, end_ptr);
 		}
 
-		//clears the whole array and resets the pushm_counter.
+		//clears the whole array and resets the size to 0.
 		constexpr void clear()
 		{
 			for (size_type i = 0; i < m_count; i++)
