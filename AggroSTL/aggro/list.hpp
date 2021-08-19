@@ -117,7 +117,7 @@ namespace aggro
 		using const_pointer = const T*;
 
 		using iterator = s_iterator<T>;
-        using consts_iterator = const s_iterator<T>;
+        using const_iterator = const s_iterator<T>;
 		using allocator_type = Alloc;
 
     private:
@@ -312,13 +312,13 @@ namespace aggro
         constexpr iterator begin() { return iterator{alloc.resource()}; }
         
         //Get an iterator to the start of the list.
-        constexpr consts_iterator begin() const { return iterator{alloc.resource()}; }
+        constexpr const_iterator begin() const { return iterator{alloc.resource()}; }
 
         //Get an iterator to the location after the end of the list.
         constexpr iterator end() { return iterator{nullptr}; }
         
         //Get an iterator to the location after the end of the list.
-        constexpr consts_iterator end() const { return iterator{nullptr}; }
+        constexpr const_iterator end() const { return iterator{nullptr}; }
         
         //Is the listy empty?
         [[nodiscard("This function does not empty the list.")]] constexpr bool empty()
@@ -489,7 +489,7 @@ namespace aggro
 		using const_pointer = const T*;
 
 		using iterator = d_iterator<T>;
-        using consts_iterator = const d_iterator<T>;
+        using const_iterator = const d_iterator<T>;
 		using allocator_type = Alloc;
 
     private:
@@ -760,13 +760,13 @@ namespace aggro
         constexpr iterator begin() { return iterator{alloc.resource()}; }
         
         //Get an iterator to the start of the list.
-        constexpr consts_iterator begin() const { return iterator{alloc.resource()}; }
+        constexpr const_iterator begin() const { return iterator{alloc.resource()}; }
 
         //Get an iterator to the location after the end of the list.
         constexpr iterator end() { return iterator{nullptr}; }
         
         //Get an iterator to the location after the end of the list.
-        constexpr consts_iterator end() const { return iterator{nullptr}; }
+        constexpr const_iterator end() const { return iterator{nullptr}; }
         
         //Is the listy empty?
         [[nodiscard("This function does not empty the list.")]] constexpr bool empty()
