@@ -102,6 +102,13 @@ namespace aggro
         {
             new(&(spot->value)) value_type(forward<Args>(args)...);
         }
+
+        //Constructs an object into the specified location using placement new.
+        template<typename... Args>
+        constexpr void construct(value_type* spot, Args&&... args)
+        {
+            new(spot) value_type(forward<Args>(args)...);
+        }
     };
 
 } // namespace aggro
