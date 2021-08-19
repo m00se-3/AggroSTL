@@ -62,17 +62,17 @@ namespace aggro
             return *this;
         }
 
-        constexpr T& operator++() //prefix
+        constexpr s_iterator& operator++() //prefix
         {
             node = node->next;
-            return node->value;
+            return *this;
         }
 
-        constexpr T operator++(int) //postfix
+        constexpr s_iterator& operator++(int) //postfix
         {
-            T old = node->value;
+            s_iterator old = *this;
             node = node->next;
-            return old->value;
+            return old;
         }
     };
 
@@ -421,30 +421,30 @@ namespace aggro
                 return *this;
             }
 
-            constexpr T& operator++() //prefix
+            constexpr d_iterator& operator++() //prefix
             {
                 node = node->next;
-                return node->value;
+                return *this;
             }
 
-            constexpr T& operator++(int) //postfix
+            constexpr d_iterator& operator++(int) //postfix
             {
-                T old = node->value;
+                d_iterator old = *this;
                 node = node->next;
-                return old->value;
+                return old;
             }
 
-            constexpr T& operator--() //prefix
+            constexpr d_iterator& operator--() //prefix
             {
                 node = node->prev;
-                return node->value;
+                return *this;
             }
 
-            constexpr T& operator--(int) //postfix
+            constexpr d_iterator& operator--(int) //postfix
             {
-                T old = node->value;
+                d_iterator old = *this;
                 node = node->prev;
-                return old->value;
+                return old;
             }
         };
 
