@@ -16,6 +16,8 @@ namespace aggro
         array<T, Size> block;
 
         constexpr deque_node() = default;
+        constexpr deque_node(const deque_node& other) : prev(other.prev), next(other.next), block(other.block) {}
+        constexpr deque_node(deque_node&& other) : prev(move(other.prev)), next(move(other.next)), block(move(other.block)) {}
         constexpr deque_node(deque_node* p, deque_node n) : prev(p), next(n), block() {}
         constexpr deque_node(std::initializer_list<T>&& inits, deque_node* p = nullptr, deque_node n = nullptr) : prev(p), next(n), block(move(inits)) {}
 
@@ -295,9 +297,68 @@ namespace aggro
         constexpr deque() = default;
         constexpr ~deque() = { clear(); }
 
+        constexpr deque(const deque& other)
+        : m_count(other.size())
+        {
+            const_iterator e = other.end();
+            node* pre = nullptr;
+
+            iterator cwn;
+
+            for(iterator b = other.begin(); b != e; ++b)
+            {
+                if(b.it2 == b.it1.begin())
+                {
+                    cwn = create_node(pre);
+                    pre = cwn.it1;
+                }
+                else
+                {
+                    ++cwn;
+                }
+
+                _emplace(cwn, *(other.it2));
+            }
+        }
+
+        constexpr deque(deque&& other)
+        : m_count(other.size())
+        {
+            allocator_type* o_all = other.get_allocator();
+            alloc.set_res(o_all->resource(), o_all->resource_rev());
+            o_all->unlink();
+        }
 
 
 
+        constexpr reference operator[](size_type index)
+        {
+            return *(begin() + index);
+        }
+
+        constexpr const_reference operator[](size_type index) const
+        {
+            return *(begin() + index);
+        }
+
+        constexpr aggro::optional_ref<T> at(size_type index)
+        {
+            if(index < m_count)
+            {
+                return *(begin() + index);
+            }
+            else
+            {
+                return aggro::nullopt_ref_t{};
+            }
+        }
+
+        constexpr allocator_type* get_allocator() const noexcept { return & alloc; }
+        
+        constexpr size_type size() const { return m_count; }
+
+        [[nodiscard("Function does not empty the container.")]]
+        constexpr bool empty() const { return begin() == end(); }
 
         constexpr void clear()
         {
@@ -305,7 +366,7 @@ namespace aggro
 
             while(b)
             {
-                for(auto& item : *(b->block))
+                for(auto& item : b->block)
                 {
                     item.~T();
                 }
