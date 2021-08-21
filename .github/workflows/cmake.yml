@@ -20,7 +20,7 @@ jobs:
     
     strategy:
         matrix:
-          clang: [11]
+          clang++: [11]
 
     steps:
     - uses: actions/checkout@v2
