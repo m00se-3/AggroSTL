@@ -148,7 +148,7 @@ namespace aggro
             {
                 if(alloc.resource() == nullptr)
                 {
-                    alloc.set_res(_emplace(nullptr, move(*(init.begin() + i))));
+                    alloc.set_head(_emplace(nullptr, move(*(init.begin() + i))));
                     current = alloc.resource();
                 }
                 else
@@ -168,7 +168,7 @@ namespace aggro
             {
                 if(alloc.resource() == nullptr)
                 {
-                    alloc.set_res(_emplace(nullptr, val));
+                    alloc.set_head(_emplace(nullptr, val));
                     current = alloc.resource();
                 }
                 else
@@ -184,7 +184,7 @@ namespace aggro
         : m_count(other.size())
         {
             allocator_type* o_all = other.get_allocator();
-            alloc.set_res(o_all->resource());
+            alloc.set_head(o_all->resource());
             o_all->unlink();
         }
 
@@ -199,14 +199,14 @@ namespace aggro
         //Create a new node and make it the front node.
         constexpr iterator push_front(const T& value)
         {
-            alloc.set_res(_emplace(alloc.resource(), value));
+            alloc.set_head(_emplace(alloc.resource(), value));
             return iterator{ alloc.resource() };
         }
 
         //Create a new node and make it the front node.
         constexpr iterator push_front(T&& value)
         {
-            alloc.set_res(_emplace(alloc.resource(), move(value)));
+            alloc.set_head(_emplace(alloc.resource(), move(value)));
             return iterator{ alloc.resource() };
         }
 
@@ -214,26 +214,28 @@ namespace aggro
         template<typename... Args>
         constexpr iterator emplace_front(Args&&... args)
         {
-            alloc.set_res(_emplace(alloc.resource(), forward<Args>(args)...));
+            alloc.set_head(_emplace(alloc.resource(), forward<Args>(args)...));
             return iterator{ alloc.resource() };
         }
 
         //Remove the head node and make the second node the new front.
         constexpr void pop_front()
         {
+            if(empty()) return;
             s_node* old_head = alloc.resource();
             s_node* new_head = old_head->next;
             old_head->~s_node();
 
             alloc.deallocate(old_head, 1);
 
-            alloc.set_res(new_head);
+            alloc.set_head(new_head);
             --m_count;
         }
 
         //Insert a value after the specified node location.
         constexpr iterator insert_after(iterator loc, const T& value)
         {
+            if(empty()) return emplace_front(move(value));
             if(loc.get() == nullptr) return iterator { nullptr };
             
             s_node* node = loc.get();
@@ -245,6 +247,7 @@ namespace aggro
         //Insert a value after the specified node location.
         constexpr iterator insert_after(iterator loc, T&& value)
         {
+            if(empty()) return emplace_front(move(value));
             if(loc.get() == nullptr) return iterator { nullptr };
             
             s_node* node = loc.get();
@@ -257,6 +260,7 @@ namespace aggro
         template<typename... Args>
         constexpr iterator emplace_after(iterator loc, Args&&... args)
         {
+            if(empty()) return emplace_front(forward<Args>(args)...);
             if(loc.get() == nullptr) return iterator { nullptr };
             
             s_node* node = loc.get();
@@ -268,6 +272,7 @@ namespace aggro
         //Remove the specified node and preserve the link chain.
         constexpr void erase_after(iterator loc)
         {
+            if(empty()) return;
             s_node* working_node = loc.get();
             
             if(working_node == nullptr) return;
@@ -302,7 +307,7 @@ namespace aggro
             }
 
             m_count = 0;
-            alloc.set_res(nullptr);
+            alloc.set_head(nullptr);
         }
 
         //Get a pointer to the underlying allocator.
@@ -536,13 +541,14 @@ namespace aggro
                 if(alloc.resource() == nullptr)
                 {
                     d_node* node = _emplace(nullptr, move(*(init.begin() + i)));
-                    alloc.set_res(node, node);
+                    alloc.set_head(node);
+                    alloc.set_tail(node);
                     current = node;
                 }
                 else
                 {
                     current->next = _emplace(nullptr, move(*(init.begin() + i)));
-                    alloc.set_res(nullptr, current->next);
+                    alloc.set_tail(current->next);
                     current = current->next;
                 }
 
@@ -558,14 +564,15 @@ namespace aggro
             {
                 if(alloc.resource() == nullptr)
                 {
-                    d_node* node = _emplace(nullptr, val);
-                    alloc.set_res(node, node);
+                    d_node* node = _emplace(alloc.resource_rev(), val);
+                    alloc.set_head(node);
+                    alloc.set_tail(node);
                     current = node;
                 }
                 else
                 {
-                    current->next = _emplace(nullptr, val);
-                    alloc.set_res(nullptr, current->next);
+                    current->next = _emplace(alloc.resource_rev(), val);
+                    alloc.set_tail(nullptr, current->next);
                     current = current->next;
                 }
 
@@ -576,7 +583,8 @@ namespace aggro
         : m_count(other.size())
         {
             allocator_type* o_all = other.get_allocator();
-            alloc.set_res(o_all->resource(), o_all->resource_rev());
+            alloc.set_head(o_all->resource());
+            alloc.set_tail(o_all->resource_rev());
             o_all->unlink();
         }
 
@@ -597,36 +605,50 @@ namespace aggro
         //Create a new node and make it the front node.
         constexpr iterator push_front(const T& value)
         {
-            alloc.set_res(_emplace(alloc.resource(), value));
+            alloc.set_head(_emplace(alloc.resource(), value));
             return iterator{ alloc.resource() };
         }
 
         //Create a new node and make it the front node.
         constexpr iterator push_front(T&& value)
         {
-            alloc.set_res(_emplace(alloc.resource(), move(value)));
+            alloc.set_head(_emplace(alloc.resource(), move(value)));
             return iterator{ alloc.resource() };
         }
 
         //Create a new node and make it the back node.
         constexpr iterator push_back(const T& value)
         {
-            alloc.set_res(nullptr, _emplace(alloc.resource_rev(), value));
-            return iterator{ alloc.resource_rev() };
+            if(empty())
+            {
+                return emplace_front(move(value));
+            }
+            else
+            {
+                alloc.set_tail(_emplace(alloc.resource_rev(), value));
+                return iterator{ alloc.resource_rev() };
+            }
         }
 
         //Create a new node and make it the back node.
         constexpr iterator push_back(T&& value)
         {
-            alloc.set_res(nullptr, _emplace(nullptr, move(value)));
-            return iterator{ alloc.resource_rev() };
+            if(empty())
+            {
+                return emplace_front(move(value));
+            }
+            else
+            {
+                alloc.set_tail(_emplace(alloc.resource_rev(), move(value)));
+                return iterator{ alloc.resource_rev() };
+            }
         }
 
         //Construct a new node in place and make it the front node.
         template<typename... Args>
         constexpr iterator emplace_front(Args&&... args)
         {
-            alloc.set_res(_emplace(alloc.resource(), forward<Args>(args)...));
+            alloc.set_head(_emplace(alloc.resource(), forward<Args>(args)...));
             return iterator{ alloc.resource() };
         }
 
@@ -634,39 +656,51 @@ namespace aggro
         template<typename... Args>
         constexpr iterator emplace_back(Args&&... args)
         {
-            alloc.set_res(nullptr, _emplace(nullptr, forward<Args>(args)...));
-            return iterator{ alloc.resource_rev() };
+            if(empty())
+            {
+                return emplace_front(forward<Args>(args)...);
+            }
+            else
+            {
+                alloc.set_tail(_emplace(alloc.resource_rev(), forward<Args>(args)...));
+                return iterator{ alloc.resource_rev() };
+            }
         }
 
         //Remove the head node and make the second node the new front.
         constexpr void pop_front()
         {
+            if(empty()) return;
             d_node* old_head = alloc.resource();
             d_node* new_head = old_head->next;
+            if(new_head) new_head->prev = nullptr;
+            alloc.set_head(new_head);
             old_head->~d_node();
 
             alloc.deallocate(old_head, 1);
 
-            alloc.set_res(new_head);
             --m_count;
         }
 
         //Remove the tail node and make the second node the new back.
         constexpr void pop_back()
         {
+            if(empty()) return;
             d_node* old_tail = alloc.resource_rev();
             d_node* new_tail = old_tail->prev;
+            if(new_tail) new_tail->next = nullptr;
+            alloc.set_tail(new_tail);
             old_tail->~d_node();
 
             alloc.deallocate(old_tail, 1);
 
-            alloc.set_res(nullptr, new_tail);
             --m_count;
         }
 
         //Insert a value before the specified node location.
         constexpr iterator insert(iterator loc, const T& value)
         {
+            if(empty()) return emplace_front(move(value));
             if(loc.get() == nullptr) return iterator { nullptr };
             
             d_node* node = loc.get();
@@ -681,6 +715,7 @@ namespace aggro
         //Insert a value before the specified node location.
         constexpr iterator insert(iterator loc, T&& value)
         {
+            if(empty()) return emplace_front(move(value));
             if(loc.get() == nullptr) return iterator { nullptr };
             
             d_node* node = loc.get();
@@ -696,6 +731,7 @@ namespace aggro
         template<typename... Args>
         constexpr iterator emplace(iterator loc, Args&&... args)
         {
+            if(empty()) return emplace_front(forward<Args>(args)...);
             if(loc.get() == nullptr) return iterator { nullptr };
             
             d_node* node = loc.get();
@@ -710,6 +746,7 @@ namespace aggro
         //Remove the specified node and preserve the link chain.
         constexpr void erase(iterator loc)
         {
+            if(empty()) return;
             d_node* node_to_delete = loc.get();
 
             if(node_to_delete == nullptr) return;
@@ -720,11 +757,11 @@ namespace aggro
             {
                 prev_node->next = node_to_delete->next;
 
-                if(prev_node->next) alloc.set_res(nullptr, prev_node);
+                if(!prev_node->next) alloc.set_tail(prev_node);
             }
             else
             {
-                alloc.set_res(node_to_delete->next);
+                alloc.set_head(node_to_delete->next);
             }
 
             node_to_delete->~d_node();
@@ -750,7 +787,7 @@ namespace aggro
             }
 
             m_count = 0;
-            alloc.set_res(nullptr);
+            alloc.unlink();
         }
 
         //Get a pointer to the underlying allocator.
