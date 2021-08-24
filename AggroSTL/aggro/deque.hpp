@@ -325,7 +325,8 @@ namespace aggro
         : m_count(other.size())
         {
             allocator_type* o_all = other.get_allocator();
-            alloc.set_res(o_all->resource(), o_all->resource_rev());
+            alloc.set_head(o_all->resource());
+            alloc.set_tail(o_all->resource_rev());
             o_all->unlink();
         }
 
