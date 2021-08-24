@@ -10,7 +10,7 @@ The final goal of this library is to avoid the use of exceptions. To that end, w
 
 ## Dependence on the Standard Template Library  
 
-Currently the AggroSTL relies on some parts of the STL for building its API, namely the Concepts library. These dependencies will be gradually replaced with our own code as the AggroSTL matures and develops.  
+Currently the AggroSTL relies on some parts of the STL for building its API, namely the Concepts library. Some of these dependencies will be gradually replaced with our own code as the AggroSTL matures and develops. Keep in mind, however, this library will never completely replace the STL. It will simply give game developers additional tools created specifically with their needs in mind.  
 
 That being said, the AggroSTL trys to emulate the STL's API where it can for easy migration and compatibility with existing algorithms.  
 
