@@ -54,11 +54,31 @@ static void test_dlist_with_strings([[maybe_unused]] aggro::heap_counter h)
     std::cout << words << "\n";
 }
 
+static void test_list_from_empty([[maybe_unused]] aggro::heap_counter h)
+{
+    aggro::slist<size_t> single;
+    aggro::dlist<size_t> dub;
+
+    for(size_t i = 0u; i < 100u; ++i)
+    {
+        if(i % 2u == 0u)
+        {
+            dub.pop_front();
+            single.erase_after(single.begin());
+        }
+        
+        dub.emplace_back(i);
+        single.emplace_front(i);
+    }
+
+}
+
 
 int main()
 {
     
     MEM_CHECK(test_slist_with_pod)
     MEM_CHECK(test_dlist_with_strings)
+    MEM_CHECK(test_list_from_empty)
     
 }
