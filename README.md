@@ -2,11 +2,11 @@
 
 A C++20 template library which provides an alternative to the Standard Template Library. This library does not completely replace the STL, but has several memory efficient alternatives to their STL counterparts. This library takes advangate of C++20 Concepts in order to provide a clean template API that is (relatively) easy to debug.  
 
-One of the big goals of this library is to give the programmer as much control over their memory as possible. The data containers in this library are very flexible in this regard. One example is **aggro::darray**, the replacement for **std::vector**. It gives the programmer the ability to decidehow much memory it allocates when it needs to expand, and programmers can change this *at run-time!* This is in contrast with std::vector which gives you zero control over that and can sometimes be unpredictable with it's memory consumption.  
+One of the big goals of this library is to give the programmer as much control over their memory as possible. The data containers in this library are very flexible in this regard. One example is **aggro::darray**, the replacement for **std::vector**. It gives the programmer the ability to decide how much memory it allocates when it needs to expand, and programmers can change this *at run-time!* This is in contrast with std::vector which gives you zero control over that and can sometimes be unpredictable with it's memory consumption.  
 
 Another goal of this library is performance. The AggroSTL tries to achieve CPU and memory efficiency that is equal to or better than the Standard Template Library. Although the AggroSTL is still young and far from perfect, so far the benchmark tests we have been running look promising.  
 
-The final goal of this library is to avoid the use of exceptions. To that end, we have created the **optional_ref** template which can be used to eliminate the need to resort to exceptions when reference returning functions fail. However, this feature is still experimental so use carefully.  
+The final goal of this library is to avoid useing exceptions. Exceptions can be a nasty performance killer in real-time applications, like games. To that end, we have created the **optional_ref** template which provides a way to validate lvalue references. This eliminates the need to resort to exceptions when reference returning functions fail. However, this feature is still experimental so use carefully.  
 
 ## Dependence on the Standard Template Library  
 
