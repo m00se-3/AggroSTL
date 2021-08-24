@@ -280,12 +280,12 @@ namespace aggro
             if(p)
                 new_node->prev = p;
             else
-                alloc.set_res(new_node);
+                alloc.set_head(new_node);
 
             if(n)
                 new_node->next = n;
             else
-                alloc.set_res(nullptr, new_node);
+                alloc.set_tail(new_node);
 
             return iterator{ new_node, new_node->begin() };
         }
@@ -295,7 +295,20 @@ namespace aggro
         constexpr deque() = default;
         constexpr ~deque() = { clear(); }
 
+        constexpr deque(const deque& other)
+        : m_count(other.size())
+        {
+            
+        }
 
+        constexpr deque(deque&& other) noexcept
+        : m_count(other.size())
+        {
+            allocator_type* o_all = other.get_allocator();
+            alloc.set_head(o_all->resource());
+            alloc.set_tail(o_all->resource_rev());
+            o_all->unlink();
+        }
 
 
 
@@ -318,6 +331,9 @@ namespace aggro
             m_count = 0u;
         }
 
+        constexpr size_type size() const { return m_count; }
+        constexpr allocator_type* get_allocator() const noexcept { return &alloc; }
+        
         constexpr iterator begin() { return alloc.resource(); }
         constexpr const_iterator begin() const { alloc.resource(); }
 
