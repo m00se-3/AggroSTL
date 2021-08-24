@@ -2,7 +2,7 @@
 
 A C++20 template library which provides an alternative to the Standard Template Library. This library does not completely replace the STL, but has several memory efficient alternatives to their STL counterparts. This library takes advangate of C++20 Concepts in order to provide a clean template API that is (relatively) easy to debug.  
 
-One of the big goals of this library is to give the programmer as much control over their memory as possible. The data containers in this library are very flexible in thisregard. Right now the main container we've optimized with this goal is **aggro::darray**, the replacement for **std::vector**. It gives the programmer the ability to decidehow much memory it allocates when it needs to expand, and programmers can change this *at run-time!* This is in contrast with std::vector which gives you zero control overthat.  
+One of the big goals of this library is to give the programmer as much control over their memory as possible. The data containers in this library are very flexible in thisregard. Right now the main container we've optimized with this goal is **aggro::darray**, the replacement for **std::vector**. It gives the programmer the ability to decidehow much memory it allocates when it needs to expand, and programmers can change this *at run-time!* This is in contrast with std::vector which gives you zero control over that and can sometimes be unpredictable with it's memory consumption.  
 
 Another goal of this library is performance. The AggroSTL tries to achieve CPU and memory efficiency that is equal to or better than the Standard Template Library. Although the AggroSTL is still young and far from perfect, so far the benchmark tests we have been running look promising.  
 
