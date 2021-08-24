@@ -9,7 +9,7 @@ target_sources(
     ${CMAKE_CURRENT_LIST_DIR}/aggro/concepts/stream.hpp
     ${CMAKE_CURRENT_LIST_DIR}/aggro/allocators/standard.hpp
     ${CMAKE_CURRENT_LIST_DIR}/aggro/allocators/standard.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/aggro/mem_profile.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/aggro/profile.hpp
 )
 
 target_sources(
