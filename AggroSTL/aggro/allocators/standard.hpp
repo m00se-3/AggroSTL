@@ -70,11 +70,16 @@ namespace aggro
         //Returns a pointer to the tail node.
         constexpr const memory_resource resource_rev() const { return m_tail_node; }
 
-        //Changes the head and/ or tail nodes provided the respective arguments are not nullptr.
-        constexpr void set_res(memory_resource first, memory_resource last = nullptr)
+        //Changes the head node.
+        constexpr void set_head(memory_resource node)
         {
-            if(first) m_head_node = first;
-            if(last) m_tail_node = last;
+            m_head_node = node;
+        }
+
+        //Changes the tail node.
+        constexpr void set_tail(memory_resource node)
+        {
+            m_tail_node = node;
         }
 
         //Remove all pointers from this allocator.
