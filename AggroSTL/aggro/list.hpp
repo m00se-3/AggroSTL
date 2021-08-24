@@ -274,10 +274,8 @@ namespace aggro
         {
             if(empty()) return;
             s_node* working_node = loc.get();
-            
-            if(working_node == nullptr) return;
 
-            if(working_node->next)
+            if(working_node && working_node->next)
             {
                 s_node* node_to_delete = working_node->next;
                 working_node->next = node_to_delete->next;
@@ -510,6 +508,7 @@ namespace aggro
             if(spot)
             {
                 new_node->prev = spot->prev;
+                spot->prev = new_node;
             }
             else
             {
@@ -518,6 +517,10 @@ namespace aggro
                 {
                     new_node->prev = end_node;
                     end_node->next = new_node;
+                }
+                else
+                {
+                    alloc.set_tail(new_node);
                 }
             }
 
@@ -564,15 +567,15 @@ namespace aggro
             {
                 if(alloc.resource() == nullptr)
                 {
-                    d_node* node = _emplace(alloc.resource_rev(), val);
+                    d_node* node = _emplace(nullptr, val);
                     alloc.set_head(node);
                     alloc.set_tail(node);
                     current = node;
                 }
                 else
                 {
-                    current->next = _emplace(alloc.resource_rev(), val);
-                    alloc.set_tail(nullptr, current->next);
+                    current->next = _emplace(nullptr, val);
+                    alloc.set_tail(current->next);
                     current = current->next;
                 }
 
@@ -605,7 +608,7 @@ namespace aggro
         //Create a new node and make it the front node.
         constexpr iterator push_front(const T& value)
         {
-            alloc.set_head(_emplace(alloc.resource(), value));
+            alloc.set_head(_emplace(alloc.resource(), move(value)));
             return iterator{ alloc.resource() };
         }
 
@@ -625,7 +628,7 @@ namespace aggro
             }
             else
             {
-                alloc.set_tail(_emplace(alloc.resource_rev(), value));
+                alloc.set_tail(_emplace(nullptr, value));
                 return iterator{ alloc.resource_rev() };
             }
         }
@@ -639,7 +642,7 @@ namespace aggro
             }
             else
             {
-                alloc.set_tail(_emplace(alloc.resource_rev(), move(value)));
+                alloc.set_tail(_emplace(nullptr, move(value)));
                 return iterator{ alloc.resource_rev() };
             }
         }
@@ -662,7 +665,7 @@ namespace aggro
             }
             else
             {
-                alloc.set_tail(_emplace(alloc.resource_rev(), forward<Args>(args)...));
+                alloc.set_tail(_emplace(nullptr, forward<Args>(args)...));
                 return iterator{ alloc.resource_rev() };
             }
         }
@@ -806,7 +809,7 @@ namespace aggro
         constexpr const_iterator end() const { return iterator{nullptr}; }
         
         //Is the listy empty?
-        [[nodiscard("This function does not empty the list.")]] constexpr bool empty()
+        [[nodiscard("This function does not empty the list.")]] constexpr bool empty() const
         {
             return (begin() == end());
         }
