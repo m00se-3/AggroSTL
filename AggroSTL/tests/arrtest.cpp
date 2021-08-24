@@ -1,10 +1,10 @@
 #define AGGRO_MEMORY_PROFILE
 #include "array.hpp"
-#include "mem_profile.hpp"
+#include "profile.hpp"
 #include <string>
 
 
-static void test_static_array([[maybe_unused]] aggro::heap_counter h)
+static void test_static_array([[maybe_unused]] aggro::bench_timer t, [[maybe_unused]] aggro::heap_counter h)
 {
     aggro::array<int, 5> is = { 1, 2, 3, 4, 5 };
     aggro::array<int, 5> other = { 6, 7, 8, 9, 0 };
@@ -19,7 +19,7 @@ static void test_static_array([[maybe_unused]] aggro::heap_counter h)
     }
 }
 
-static void test_dynamic_array([[maybe_unused]] aggro::heap_counter h)
+static void test_dynamic_array([[maybe_unused]] aggro::bench_timer t, [[maybe_unused]] aggro::heap_counter h)
 {
     aggro::darray<std::string> fs;
     
