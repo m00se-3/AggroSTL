@@ -1,167 +1,96 @@
 #ifndef AGGRO_DEQUE_HPP
 #define AGGRO_DEQUE_HPP
 
+#include "list.hpp"
 #include "array.hpp"
 
 namespace aggro
 {
-    //Node struct for the deque class.
-    template<typename T, std::size_t Size>
-    struct deque_node
-    {
-        using value_type = T;
-
-        deque_node* prev = nullptr;
-        deque_node* next = nullptr;
-        array<T, Size> block;
-
-        constexpr deque_node() = default;
-        constexpr deque_node(const deque_node& other) : prev(other.prev), next(other.next), block(other.block) {}
-        constexpr deque_node(deque_node&& other) : prev(move(other.prev)), next(move(other.next)), block(move(other.block)) {}
-        constexpr deque_node(deque_node* p, deque_node n) : prev(p), next(n), block() {}
-        constexpr deque_node(std::initializer_list<T>&& inits, deque_node* p = nullptr, deque_node n = nullptr) : prev(p), next(n), block(move(inits)) {}
-
-        constexpr array::iterator begin() { return block.begin(); }
-        constexpr array::iterator end() { return block.end(); }
-
-    };
-
-    //Deque iterator.
-    template<typename T, std::size_t Size>
+    template<typename T, std::size_t Size, standard_allocator Alloc>
     struct deque_iterator
     {
         using value_type = T;
         using size_type = std::size_t;
-        using node = deque_node<T,Size>;
+        using node = dlist<array<T, Size>, Alloc>::d_node;
 
-        node* it1 = nullptr;
-        T* it2 = nullptr;
+        node* book = nullptr;
+        size_type index = 0u;
 
-        deque_iterator() = default;
-        deque_iterator(node* n) : it1(n), it2(n->begin()) {}
-        deque_iterator(node* n, T* t) : it1(n), it2(t) {}
+        deque_iterator(node* bk) : book(bk) {}
+        deque_iterator(node* bk, size_type i) : book(bk), index(i) {}
 
         //Get the underlying pointer.
-        constexpr node* get() const { return this->it1; }
+        constexpr node* get() const { return book; }
 
-        constexpr deque_iterator& skip_front(size_type num)
-        {
-            size_type local_count = (this->it2 - this->it1->begin()) / sizeof(value_type);
-            
-            while(this->it1 && num != 0)
-            {
-                this->it1 = this->it1->next;
-                --num;
-            }
-
-            if(!this->it1)
-            {
-                this->it2 = nullptr;
-                return *this;
-            }
-
-            this->it2 = this->it1->begin() + local_count;
-
-            return *this;
-        }
-
-        constexpr deque_iterator& skip_back(size_type num)
-        {
-            size_type local_count = (this->it2 - this->it1->begin()) / sizeof(value_type);
-            
-            while(this->it1 && num != 0)
-            {
-                this->it1 = this->it1->prev;
-                --num;
-            }
-
-            if(!this->it1)
-            {
-                this->it2 = nullptr;
-                return *this;
-            }
-
-            this->it2 = this->it1->begin() + local_count;
-
-            return *this;
-        }
-        
         constexpr T& operator*()
         {
-            return *this->it2;
+            return book->value[index];
         }
 
         constexpr const T& operator*() const
         {
-            return *this->it2;
+            return book->value[index];
         }
 
-        constexpr deque_iterator operator+(size_type index)
+        constexpr deque_iterator operator+(size_type ind)
         {
-            const size_type hops = index / (Size - 1u);
-            size_type steps = index % (Size - 1u);
-
-            if(hops > 0) skip_front(hops);
-
-            while(this->it2 && steps != 0u)
+            while (book && ind > Size - 1u)
             {
-                this->it2++;
-                if(this->it2 == this->it1->end())
-                {
-                    this->it1 = this->it1->next;
-                    if(this->it1)
-                        this->it2 = this->it1->begin();
-                    else
-                    {
-                        this->it2 = nullptr;
-                        break;
-                    }
-
-                    --steps;
-                }
+                book = book->next;
+                ind -= Size;
             }
+
+            if (book) index = ind;
 
             return *this;
         }
 
-        constexpr deque_iterator operator-(size_type index)
+        constexpr deque_iterator operator-(size_type ind)
         {
-            const size_type hops = index / (Size - 1u);
-            size_type steps = index % (Size - 1u);
-
-            if(hops > 0) skip_back(hops);
-
-            while(this->it2 && steps != 0u)
+            while (book && ind > Size - 1u)
             {
-                if(this->it2 == this->it1->begin())
-                {
-                    this->it1 = this->it1->prev;
-                    if(this->it1)
-                        this->it2 = this->it1->end() - 1u;
-                    else
-                    {
-                        this->it2 = nullptr;
-                        break;
-                    }
-
-                    --steps;
-                }
-                this->it2--;
+                book = book->prev;
+                ind -= Size;
             }
+
+            if (book) index = Size - ind;
+
+            return *this;
+        }
+
+        constexpr deque_iterator& operator+=(size_type ind)
+        {
+            while (book && ind > Size - 1u)
+            {
+                book = book->next;
+                ind -= Size;
+            }
+
+            if (book) index = ind;
+
+            return *this;
+        }
+
+        constexpr deque_iterator& operator-=(size_type ind)
+        {
+            while (book && ind > Size - 1u)
+            {
+                book = book->prev;
+                ind -= Size;
+            }
+
+            if (book) index = Size - ind;
 
             return *this;
         }
 
         constexpr deque_iterator& operator++() //prefix
         {
-            this->it2++;
-            if(this->it2 == it1->end())
+            ++index;
+            if (index == Size)
             {
-                this->it1 = it1->next;
-                if(this->it1)
-                    this->it2 = it1->begin();
-                else
-                    this->it2 = nullptr;
+                book = book->next;
+                index = 0u;
             }
 
             return *this;
@@ -171,14 +100,11 @@ namespace aggro
         {
             deque_iterator temp = *this;
             
-            this->it2++;
-            if(this->it2 == this->it1->end())
+            ++index;
+            if (index == Size)
             {
-                this->it1 = this->it1->next;
-                if(this->it1)
-                    this->it2 = it1->begin();
-                else
-                    this->it2 = nullptr;
+                book = book->next;
+                index = 0u;
             }
 
             return temp;
@@ -186,17 +112,11 @@ namespace aggro
 
         constexpr deque_iterator& operator--() //prefix
         {
-            if(this->it2 == this->it1->begin())
+            --index;
+            if (index == 0u)
             {
-                this->it1 = this->it1->prev;
-                if(this->it1)
-                    this->it2 = it1->end() - 1u;
-                else
-                    this->it2 = nullptr;
-            }
-            else
-            {
-                this->it2--;
+                book = book->prev;
+                index = Size - 1u;;
             }
 
             return *this;
@@ -205,49 +125,41 @@ namespace aggro
         constexpr deque_iterator& operator--(int) //postfix
         {
             deque_iterator temp = *this;
-
-            if(this->it2 == it1->begin())
+            
+            --index;
+            if (index == 0u)
             {
-                this->it1 = this->it1->prev;
-                if(this->it1)
-                    this->it2 = it1->end() - 1u;
-                else
-                    this->it2 = nullptr;
-            }
-            else
-            {
-                this->it2--;
+                book = book->prev;
+                index = Size - 1u;;
             }
 
             return temp;
         }
     };
 
-    template<typename T, std::size_t Size>
-    inline constexpr bool operator==(const deque_iterator<T,Size>& lhs, const deque_iterator<T,Size>& rhs)
+    template<typename T, std::size_t Size, standard_allocator Alloc>
+    inline constexpr bool operator==(const deque_iterator<T, Size, Alloc>& lhs, const deque_iterator<T, Size, Alloc>& rhs)
     {
-        if(lhs.it1 == rhs.it1 && lhs.it2 == lhs.it2)
+        if (lhs.book == rhs.book && lhs.index == rhs.index)
         {
             return true;
         }
         return false;
     }
 
-    template<typename T, std::size_t Size>
-    inline constexpr bool operator!=(const deque_iterator<T,Size>& lhs, const deque_iterator<T,Size>& rhs)
+    template<typename T, std::size_t Size, standard_allocator Alloc>
+    inline constexpr bool operator!=(const deque_iterator<T, Size, Alloc>& lhs, const deque_iterator<T, Size, Alloc>& rhs)
     {
-        if(lhs.it1 != rhs.it1 || lhs.it2 != lhs.it2)
+        if (lhs.book != rhs.book || lhs.index != rhs.index)
         {
             return true;
         }
         return false;
     }
-
-    template<typename T, std::size_t Size, standard_allocator Alloc = std_node_allocator<deque_node<T,Size>>>
+    
+    template<typename T, std::size_t Size, standard_allocator Alloc = std_node_allocator<T>>
     class deque
     {   
-        using node = deque_node<T,Size>;
-
     public:
 
         using size_type = std::size_t;
@@ -259,102 +171,91 @@ namespace aggro
 		using pointer = T*;
 		using const_pointer = const T*;
 
-		using iterator = deque_iterator<T,Size>;
-        using const_iterator = const deque_iterator<T,Size>;
-		using allocator_type = Alloc;
+		using iterator = deque_iterator<T, Size, Alloc>;
+        using const_iterator = const deque_iterator<T, Size, Alloc>;
+        using reverse_iterator = deque_iterator<T, Size, Alloc>;
+        using const_reverse_iterator = const deque_iterator<T, Size, Alloc>;
+
+        using allocator_type = Alloc;
 
     private:
 
-        allocator_type alloc;
+        dlist<array<T, Size>, Alloc> ledger;
         size_type m_count = 0u;
+        size_type offset = 0u;
 
         template<typename... Args>
-        constexpr void _emplace(iterator spot, Args&&... args)
+        constexpr void _emplace(pointer spot, Args&&... args)
         {
-            alloc.construct(spot->it2, forward<Args>(args)...);
+            ledger.get_allocator()->construct(spot, forward<Args>(args)...);
             ++m_count;
-        }
-
-        constexpr iterator create_node(node* p = nullptr, node* n = nullptr)
-        {
-            node* new_node = alloc.allocate(1);
-
-            if(p)
-                new_node->prev = p;
-            else
-                alloc.set_head(new_node);
-
-            if(n)
-                new_node->next = n;
-            else
-                alloc.set_tail(new_node);
-
-            return iterator{ new_node, new_node->begin() };
         }
 
     public:
 
         constexpr deque() = default;
-        constexpr ~deque() = { clear(); }
+        constexpr ~deque() { clear(); }
 
         constexpr deque(const deque& other)
-        : m_count(other.size())
+            : ledger(), m_count(other.size()), offset(other.padding()) 
         {
-            const_iterator e = other.end();
-            node* pre = nullptr;
-
-            iterator cwn;
-
-            for(iterator b = other.begin(); b != e; ++b)
-            {
-                if(b.it2 == b.it1.begin())
-                {
-                    cwn = create_node(pre);
-                    pre = cwn.it1;
-                }
-                else
-                {
-                    ++cwn;
-                }
-
-                _emplace(cwn, *(other.it2));
-            }
+            
         }
 
         constexpr deque(deque&& other)
-        : m_count(other.size())
+            : ledger(), m_count(other.size()), offset(other.padding()) 
         {
-            allocator_type* o_all = other.get_allocator();
-            alloc.set_head(o_all->resource());
-            alloc.set_tail(o_all->resource_rev());
-            o_all->unlink();
-        }
-
-
-        constexpr deque(deque&& other) noexcept
-        : m_count(other.size())
-        {
-            allocator_type* o_all = other.get_allocator();
-            alloc.set_head(o_all->resource());
-            alloc.set_tail(o_all->resource_rev());
-            o_all->unlink();
+            
         }
 
         constexpr reference operator[](size_type index)
         {
-            return *(begin() + index);
+            index += offset;
+            if (index < Size)
+            {
+                return ledger.front()[index];
+            }
+            else
+            {
+                const size_type jumps = index / Size;
+                const size_type steps = index % Size;
+
+                return *((ledger.begin() + jumps).data() + steps);
+            }
         }
 
         constexpr const_reference operator[](size_type index) const
         {
-            return *(begin() + index);
+            index += offset;
+            if (index < Size)
+            {
+                return ledger.front()[index];
+            }
+            else
+            {
+                const size_type jumps = index / Size;
+                const size_type steps = index % Size;
+
+                return *((ledger.begin() + jumps).data() + steps);
+            }
         }
 
         constexpr aggro::optional_ref<T> at(size_type index)
-        {
+        {            
             if(index < m_count)
             {
-                return *(begin() + index);
+                index += offset;
+                if (index < Size)
+                {
+                    return ledger.front()[index];
+                }
+                else
+                {
+                    const size_type jumps = index / Size;
+                    const size_type steps = index % Size;
+
+                    return *((ledger.begin() + jumps).data() + steps);
+                }
             }
             else
             {
@@ -362,57 +263,40 @@ namespace aggro
             }
         }
 
-        constexpr allocator_type* get_allocator() const noexcept { return & alloc; }
+        template<typename... Args>
+        constexpr iterator emplace_front(Agrs&&... args)
+        {
+
+        }
+
+        constexpr allocator_type* get_allocator() const noexcept { return ledger.get_allocator(); }
         
         constexpr size_type size() const { return m_count; }
 
-        [[nodiscard("Function does not empty the container.")]]
-        constexpr bool empty() const { return begin() == end(); }
+        [[nodiscard("Function does not empty the container.")]] constexpr bool empty() const { return begin() == end(); }
 
         constexpr void clear()
         {
-            node* b = begin().get();
-
-            while(b)
-            {
-                for(auto& item : b->block)
-                {
-                    item.~T();
-                }
-
-                node* temp = b;
-                b = b->next;
-                alloc.deallocate(temp, 1u);
-            }
+            ledger.clear();
 
             m_count = 0u;
         }
 
         constexpr size_type size() const { return m_count; }
+        constexpr size_type padding() const { return offset; }
         constexpr allocator_type* get_allocator() const noexcept { return &alloc; }
+
+        constexpr reference front() { return ledger.front()[offset]; }
+        constexpr const_reference front() const { return ledger.front()[offset]; }
+
+        constexpr reference back() { return ledger.back()[(m_count - offset) % Size]; }
+        constexpr const_reference back() const { return ledger.back()[(m_count - offset) % Size]; }
         
-        constexpr iterator begin() { return alloc.resource(); }
-        constexpr const_iterator begin() const { alloc.resource(); }
+        constexpr iterator begin() { return iterator{ ledger.begin() }; }
+        constexpr const_iterator begin() const { return const_iterator{ ledger.begin() }; }
 
-        constexpr iterator end()
-        {
-            node* en = alloc.resource_rev();
-
-            if(en)
-                return iterator{ en, en.end() };
-            else
-                return iterator{};
-        }
-
-        constexpr const_iterator end() const
-        {
-            node* en = alloc.resource_rev();
-
-            if(en)
-                return const_iterator{ en, en.end() };
-            else
-                return const_iterator{};
-        }
+        constexpr iterator end() { return iterator{ nullptr }; }
+        constexpr const_iterator end() const { return const_iterator{ nullptr }; }
     };
 
 } // namespace aggro
