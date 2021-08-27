@@ -62,6 +62,17 @@ namespace aggro
             return *this;
         }
 
+        constexpr s_iterator& operator(size_type index)
+        {
+            while (this->node && index != 0)
+            {
+                this->node = this->node->next;
+                --index;
+            }
+
+            return *this;
+        }
+
         constexpr s_iterator& operator++() //prefix
         {
             node = node->next;
@@ -379,7 +390,7 @@ namespace aggro
     };
 
 
-        //This iterator meets the 'LegacyForwardIterator' standard for forward_lists.
+        //This iterator meets the 'LegacyBidirectionalIterator' standard for lists.
         template<typename T>
         struct d_iterator
         {  
@@ -416,6 +427,28 @@ namespace aggro
             constexpr d_iterator operator-(size_type index)
             {
                 while(this->node && index != 0u)
+                {
+                    this->node = this->node->prev;
+                    --index;
+                }
+
+                return *this;
+            }
+
+            constexpr d_iterator& operator+=(size_type index)
+            {
+                while (this->node && index != 0u)
+                {
+                    this->node = this->node->next;
+                    --index;
+                }
+
+                return *this;
+            }
+
+            constexpr d_iterator& operator-=(size_type index)
+            {
+                while (this->node && index != 0u)
                 {
                     this->node = this->node->prev;
                     --index;
