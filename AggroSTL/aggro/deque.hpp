@@ -18,6 +18,7 @@ namespace aggro
 
         deque_iterator(node* bk) : book(bk) {}
         deque_iterator(node* bk, size_type i) : book(bk), index(i) {}
+        deque_iterator(const deque_iterator& other) : book(other.book), index(other.index)
 
         //Get the underlying pointer.
         constexpr node* get() const { return book; }
@@ -191,22 +192,22 @@ namespace aggro
             ++m_count;
         }
 
+        friend static size_type get_offset(const deque& o) { return o.offset; }
+        friend static const dlist<array<T, Size>>& get_ledger(const deque& o) { return o.ledger; }
+        friend static dlist<array<T, Size>>&& get_ledger(deque&& o) { return forward<dlist<array>T, Size>&&(o.ledger); }
+
     public:
 
         constexpr deque() = default;
         constexpr ~deque() { clear(); }
 
         constexpr deque(const deque& other)
-            : ledger(), m_count(other.size()), offset(other.padding()) 
-        {
-            
-        }
+            : ledger(get_ledger(other)), m_count(other.size()), offset(get_offset(other)) 
+        {}
 
-        constexpr deque(deque&& other)
-            : ledger(), m_count(other.size()), offset(other.padding()) 
-        {
-            
-        }
+        constexpr deque(deque&& other) noexcept
+            : ledger(move(get_ledger(move(other)))), m_count(other.size()), offset(get_offset(other))
+        {}
 
         constexpr reference operator[](size_type index)
         {
@@ -263,14 +264,103 @@ namespace aggro
             }
         }
 
-        template<typename... Args>
-        constexpr iterator emplace_front(Agrs&&... args)
+        constexpr const aggro::optional_ref<T> at(size_type index) const
         {
+            if (index < m_count)
+            {
+                index += offset;
+                if (index < Size)
+                {
+                    return ledger.front()[index];
+                }
+                else
+                {
+                    const size_type jumps = index / Size;
+                    const size_type steps = index % Size;
 
+                    return *((ledger.begin() + jumps).data() + steps);
+                }
+            }
+            else
+            {
+                return aggro::nullopt_ref_t{};
+            }
+        }
+
+        template<typename... Args>
+        constexpr iterator emplace_front(Args&&... args)
+        {
+            if (offset == 0u)
+            {
+                ledger.emplace_front();
+                offset = Size - 1u;
+                _emplace(&(ledger.front()[offset]), forward<Args>(args)...);
+            }
+            else
+            {
+                --offset;
+                _emplace(&(ledger.front()[offset]), forward<Args>(args)...);
+            }
+
+            return iterator{ ledger.begin().get(), offset };
+        }
+
+        constexpr iterator push_front(const T& elem) { return emplace_front(elem); }
+        constexpr iterator push_front(T&& elem) { return emplace_front(move(elem)); }
+
+        template<typename... Args>
+        constexpr iterator emplace_back(Args&&... args)
+        {
+            if (empty()) return emplace_front(forward<Args>(args)...);
+
+            const size_type loc = (offset + m_count) % Size;
+
+            if (loc == 0u) ledger.emplace_back();
+            _emplace((ledger.back()[loc]), forward<Args>(args)...);
+
+            return iterator{ get_allocator()->resource_rev(), loc };
+        }
+
+        constexpr iterator push_back(const T& elem) { return emplace_back(elem); }
+        constexpr iterator push_back(T&& elem) { return emplace_back(move(elem)); }
+
+        constexpr void pop_front()
+        {
+            if (empty()) return;
+
+            if (offset == Size - 1u)
+            {
+                offset = 0u;
+                ledger.pop_front();
+            }
+            else
+            {
+                ledger.front()[offset].~T();
+                ++offset;
+            }
+
+            --m_count;
+        }
+
+        constexpr void pop_back()
+        {
+            if (empty()) return;
+
+            const size_type loc = (offset + m_count) % Size;
+
+            if (loc == 0u)
+            {
+                ledger.pop_back();
+            }
+            else
+            {
+                ledger.back()[loc].~T();
+            }
+
+            --m_count;
         }
 
         constexpr allocator_type* get_allocator() const noexcept { return ledger.get_allocator(); }
-        
         constexpr size_type size() const { return m_count; }
 
         [[nodiscard("Function does not empty the container.")]] constexpr bool empty() const { return begin() == end(); }
@@ -278,13 +368,9 @@ namespace aggro
         constexpr void clear()
         {
             ledger.clear();
-
+            offset = 0u;
             m_count = 0u;
         }
-
-        constexpr size_type size() const { return m_count; }
-        constexpr size_type padding() const { return offset; }
-        constexpr allocator_type* get_allocator() const noexcept { return &alloc; }
 
         constexpr reference front() { return ledger.front()[offset]; }
         constexpr const_reference front() const { return ledger.front()[offset]; }
@@ -292,7 +378,7 @@ namespace aggro
         constexpr reference back() { return ledger.back()[(m_count - offset) % Size]; }
         constexpr const_reference back() const { return ledger.back()[(m_count - offset) % Size]; }
         
-        constexpr iterator begin() { return iterator{ ledger.begin() }; }
+        constexpr iterator begin() { return iterator{ ledger.begin()) }; }
         constexpr const_iterator begin() const { return const_iterator{ ledger.begin() }; }
 
         constexpr iterator end() { return iterator{ nullptr }; }
